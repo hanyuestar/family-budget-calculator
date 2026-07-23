@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "BMI 计算器",
+  "usingComponents": {
+    "calc-input": "/components/calc-input/calc-input"
+  }
+}

@@ -1,0 +1,59 @@
+<!-- pages/progress/progress.wxml - 进度条 -->
+<view class="container {{isDark ? 'is-dark' : ''}}" style="background-color: {{isDark ? '#1a1a2e' : '#f5f7fa'}}">
+
+  <!-- 自动进度（零输入） -->
+  <view class="card">
+    <view class="card-title">📊 时间进度</view>
+
+    <view class="bar-row">
+      <view class="bar-label">{{yearText}}</view>
+      <view class="bar-track"><view class="bar-fill year" style="width: {{yearProgress}}%"></view></view>
+    </view>
+
+    <view class="bar-row">
+      <view class="bar-label">{{monthText}}</view>
+      <view class="bar-track"><view class="bar-fill month" style="width: {{monthProgress}}%"></view></view>
+    </view>
+
+    <view class="bar-row">
+      <view class="bar-label">{{dayText}}</view>
+      <view class="bar-track"><view class="bar-fill day" style="width: {{dayProgress}}%"></view></view>
+    </view>
+
+    <view class="hint">打开即算，无需输入，截图就能晒 ✨</view>
+  </view>
+
+  <!-- 人生进度（选填出生日期） -->
+  <view class="card">
+    <view class="card-title">🧬 人生进度</view>
+    <picker mode="date" value="{{birth}}" end="2026-12-31" bindchange="onInputBirth">
+      <view class="picker-row">
+        <text class="picker-label">出生日期</text>
+        <text class="picker-value">{{birth || '点此选择'}}</text>
+      </view>
+    </picker>
+
+    <view class="bar-row" wx:if="{{showLife}}">
+      <view class="bar-label">{{lifeText}}</view>
+      <view class="bar-track"><view class="bar-fill life" style="width: {{lifeProgress}}%"></view></view>
+    </view>
+
+    <view class="btn-row">
+      <button class="btn btn-secondary" bindtap="reset">重置</button>
+    </view>
+    <view class="hint">按预期寿命 80 岁估算</view>
+  </view>
+
+  <view class="btn-row">
+    <button class="btn btn-home" bindtap="goHome">首页</button>
+    <button class="btn btn-save" bindtap="saveResult" disabled="{{isSaving}}">保存</button>
+    <button class="btn btn-share" open-type="share">分享</button>
+  </view>
+  <view class="tip">仅计算工具，数据不保存</view>
+
+  <view class="page-bottom-spacer"></view>
+  <canvas type="2d" id="saveCanvas" class="save-canvas" style="width:300px;height:610px"></canvas>
+  <view class="ad-banner-wrap">
+    <ad unit-id="adunit-banner-progress-001" ad-type="banner" ad-theme="white"></ad>
+  </view>
+</view>

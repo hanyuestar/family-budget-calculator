@@ -1,0 +1,111 @@
+<!-- pages/wealth/wealth.wxml - 财富层级计算页 -->
+<view class="container {{isDark ? 'is-dark' : ''}}" style="background-color: {{isDark ? '#1a1a2e' : '#f5f7fa'}}">
+
+  <!-- 资产 -->
+  <view class="card">
+    <view class="card-title">💰 家庭资产（万元）</view>
+
+    <calc-input label="房产总市值" unit="万元" desc="自住+投资性房产当前市场总价" field="property" value="{{property}}" bind:input="onInput" />
+    <calc-input label="金融资产" unit="万元" desc="存款、理财、股票、基金、债券等" field="financial" value="{{financial}}" bind:input="onInput" />
+    <calc-input label="车辆及其他实物资产" unit="万元" desc="车辆、黄金、奢侈品等可变现资产" field="vehicle" value="{{vehicle}}" bind:input="onInput" />
+    <calc-input label="股权/生意/其他资产" unit="万元" desc="公司股权、投资项目、应收款等" field="equity" value="{{equity}}" bind:input="onInput" />
+  </view>
+
+  <!-- 家庭负债 -->
+  <view class="card">
+    <view class="card-title">🏦 家庭负债（万元）</view>
+
+    <calc-input label="房贷剩余本金" unit="万元" desc="所有房产未还清的贷款总额" field="mortgageDebt" value="{{mortgageDebt}}" bind:input="onInput" />
+    <calc-input label="车贷剩余本金" unit="万元" desc="车辆贷款未还部分" field="carDebt" value="{{carDebt}}" bind:input="onInput" />
+    <calc-input label="消费贷/信用卡欠款" unit="万元" desc="花呗、借呗、信用卡、消费贷等" field="consumerDebt" value="{{consumerDebt}}" bind:input="onInput" />
+    <calc-input label="其他负债" unit="万元" desc="亲友借款、经营贷等其他欠款" field="otherDebt" value="{{otherDebt}}" bind:input="onInput" />
+  </view>
+
+  <!-- 结果展示区 -->
+  <view class="result-area {{showResult ? 'show' : ''}}" wx:if="{{showResult}}">
+    <view class="result-gradient-card">
+      <!-- 净资产 -->
+      <view class="net-asset-label">你的家庭净资产为</view>
+      <view class="net-asset-value">{{netAssetStr}} 万元</view>
+
+      <!-- 等级徽章 -->
+      <view class="level-badge" wx:if="{{level}}" style="background: {{level.color}}">
+        <text class="level-emoji">{{level.emoji}}</text>
+        <text class="level-name">{{level.name}}</text>
+      </view>
+
+      <!-- 等级描述 -->
+      <view class="level-desc" wx:if="{{level}}">{{level.desc}}</view>
+
+      <!-- 三项汇总 -->
+      <view class="summary-row">
+        <view class="summary-item">
+          <view class="summary-label">总资产</view>
+          <view class="summary-value">{{totalAssetStr}}万</view>
+        </view>
+        <view class="summary-divider"></view>
+        <view class="summary-item">
+          <view class="summary-label">总负债</view>
+          <view class="summary-value">{{totalDebtStr}}万</view>
+        </view>
+        <view class="summary-divider"></view>
+        <view class="summary-item">
+          <view class="summary-label">负债率</view>
+          <view class="summary-value">{{debtRatioStr}}</view>
+        </view>
+      </view>
+
+      <!-- 声明 -->
+      <view class="disclaimer">⚠️ 本测试结果仅供娱乐，不代表真实财富水平</view>
+    </view>
+  </view>
+
+  <!-- 等级参考表 -->
+  <view class="card">
+    <view class="card-title">📋 财富等级参考表</view>
+
+    <view class="level-table">
+      <!-- 表头 -->
+      <view class="table-header">
+        <view class="col-level">等级</view>
+        <view class="col-range">净资产门槛</view>
+        <view class="col-desc">典型特征</view>
+      </view>
+
+      <!-- 表体 -->
+      <view class="table-row" wx:for="{{levelTable}}" wx:key="name">
+        <view class="col-level">
+          <text style="color: {{item.color}}; font-weight: 600;">{{item.emoji}} {{item.name}}</text>
+        </view>
+        <view class="col-range">{{item.range}}</view>
+        <view class="col-desc">{{item.desc}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部按钮区 -->
+  <view class="bottom-btn">
+    <!-- 清空重置按钮（单独一行） -->
+    <button class="btn btn-secondary" bindtap="reset">重置</button>
+  </view>
+
+  <!-- 横排三按钮 -->
+  <view class="btn-row">
+    <button class="btn btn-home" bindtap="goHome">首页</button>
+    <button class="btn btn-save" bindtap="saveResult" disabled="{{isSaving}}">保存</button>
+    <button class="btn btn-share" open-type="share" disabled="{{!showResult}}">分享</button>
+  </view>
+  <view class="tip">数据综合自民间主流口径、胡润研究院及招商银行公开资料</view>
+
+  <!-- 底部留白 -->
+  <view class="page-bottom-spacer"></view>
+
+  <!-- 隐藏canvas（用于保存结果图片） -->
+  <canvas type="2d" id="saveCanvas" class="save-canvas" style="width:300px;height:610px"></canvas>
+
+  <!-- Banner广告（固定底部） -->
+  <view class="ad-banner-wrap">
+    <ad unit-id="adunit-banner-wealth-001" ad-type="banner" ad-theme="white"></ad>
+  </view>
+
+</view>

@@ -1,0 +1,6 @@
+/* components/calc-input/calc-input.wxss
+   本组件使用 styleIsolation: apply-shared，
+   直接复用 app.wxss 中的全局类：
+   .input-row / .input-label / .input-wrapper /
+   .input-symbol / .input-field / .input-desc / .input-unit
+   无需重复定义。 */

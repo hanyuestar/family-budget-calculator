@@ -1,0 +1,16 @@
+<!-- components/calc-input/calc-input.wxml - 通用输入行 -->
+<view class="input-row">
+  <view class="input-label">{{label}}</view>
+  <view class="input-wrapper">
+    <text class="input-symbol" wx:if="{{symbol}}">{{symbol}}</text>
+    <input
+      class="input-field"
+      type="{{type}}"
+      placeholder="{{placeholder}}"
+      value="{{value}}"
+      bindinput="onInput"
+    />
+    <text class="input-unit" wx:if="{{unit}}">{{unit}}</text>
+  </view>
+  <view class="input-desc" wx:if="{{desc}}">{{desc}}</view>
+</view>

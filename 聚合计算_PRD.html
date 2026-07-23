@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《聚合计算》产品需求文档 PRD v1.3</title>
+<style>
+  :root{
+    --primary:#4A90D9;
+    --purple:#764ba2;
+    --ink:#1f2733;
+    --muted:#6b7785;
+    --line:#e3e8ef;
+    --bg-soft:#f6f9fc;
+    --warn-bg:#fff7e6;
+    --warn-bd:#ffce5c;
+    --info-bg:#eef5ff;
+    --info-bd:#9cc4f5;
+    --danger:#e5484d;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    color:var(--ink);
+    background:#eef1f5;
+    line-height:1.7;
+    font-size:15px;
+  }
+  .wrap{max-width:1000px;margin:0 auto;background:#fff;box-shadow:0 2px 18px rgba(30,40,60,.08);}
+  /* ===== Cover ===== */
+  .cover{
+    background:linear-gradient(120deg,var(--purple),var(--primary));
+    color:#fff;padding:46px 48px 38px;
+  }
+  .cover h1{margin:0 0 6px;font-size:30px;letter-spacing:.5px;}
+  .cover .sub{font-size:15px;opacity:.92;margin-bottom:22px;}
+  .meta{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 28px;font-size:13.5px;}
+  .meta div{display:flex;gap:8px;border-bottom:1px solid rgba(255,255,255,.22);padding:5px 0;}
+  .meta b{font-weight:600;min-width:84px;opacity:.85;}
+  .meta code{background:rgba(255,255,255,.18);padding:1px 6px;border-radius:4px;font-size:12.5px;}
+  .rev{margin-top:22px;background:rgba(255,255,255,.14);border-left:4px solid #fff;padding:12px 16px;border-radius:0 8px 8px 0;font-size:13.5px;}
+  /* ===== TOC ===== */
+  .toc{padding:26px 48px;background:var(--bg-soft);border-bottom:1px solid var(--line);}
+  .toc h2{margin:0 0 12px;font-size:16px;color:var(--purple);}
+  .toc ol{margin:0;padding-left:20px;columns:2;column-gap:36px;font-size:14px;}
+  .toc li{margin:4px 0;}
+  .toc a{color:var(--primary);text-decoration:none;}
+  .toc a:hover{text-decoration:underline;}
+  /* ===== Sections ===== */
+  .body{padding:10px 48px 40px;}
+  section{padding:26px 0;border-bottom:1px solid var(--line);scroll-margin-top:14px;}
+  section:last-of-type{border-bottom:none;}
+  h2{font-size:21px;margin:0 0 14px;padding-left:12px;border-left:5px solid var(--primary);color:var(--ink);}
+  h3{font-size:16.5px;margin:20px 0 8px;color:var(--purple);}
+  p{margin:8px 0;}
+  ul,ol{margin:8px 0;padding-left:22px;}
+  li{margin:5px 0;}
+  code{background:#eef1f5;padding:1px 6px;border-radius:4px;font-family:"SFMono-Regular",Consolas,Menlo,monospace;font-size:13px;color:#2b3a4a;}
+  pre{background:#0f1b2d;color:#e6edf3;padding:16px 18px;border-radius:10px;overflow-x:auto;font-size:13px;line-height:1.5;font-family:"SFMono-Regular",Consolas,Menlo,monospace;}
+  pre code{background:none;color:inherit;padding:0;}
+  /* note blocks */
+  .note{border-radius:8px;padding:12px 16px;margin:14px 0;font-size:14px;}
+  .note.warn{background:var(--warn-bg);border-left:4px solid var(--warn-bd);}
+  .note.info{background:var(--info-bg);border-left:4px solid var(--info-bd);}
+  .note b{font-weight:700;}
+  /* tables */
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+  thead th{background:linear-gradient(120deg,var(--purple),var(--primary));color:#fff;font-weight:600;}
+  tbody tr:nth-child(even){background:var(--bg-soft);}
+  /* badges */
+  .tag{display:inline-block;padding:1px 9px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;}
+  .tag.p0{background:#e6f6ec;color:#1a8a4a;}
+  .tag.p1{background:#fff0e0;color:#c46a16;}
+  .tag.p2{background:#eef5ff;color:#3a6db5;}
+  .tag.p3{background:#f0eefb;color:#6046b0;}
+  .tag.high{background:#fdeaea;color:var(--danger);}
+  .tag.mid{background:#fff0e0;color:#c46a16;}
+  .tag.low{background:#eef1f5;color:#6b7785;}
+  .tag.ok{background:#e6f6ec;color:#1a8a4a;}
+  .tag.pending{background:#f0eefb;color:#6046b0;}
+  /* summary cards */
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 0;}
+  .card{background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
+  .card h4{margin:0 0 6px;font-size:14px;color:var(--primary);}
+  .card p{margin:0;font-size:13.5px;color:#36414f;}
+  .story{padding:10px 14px;border-left:4px solid var(--purple);background:var(--bg-soft);border-radius:0 8px 8px 0;margin:9px 0;font-size:14px;}
+  .story b{color:var(--purple);}
+  .nogo{color:var(--danger);font-weight:600;}
+  .northstar{background:linear-gradient(120deg,#f3f0ff,#eef5ff);border:1px solid #d8c9f5;border-radius:10px;padding:16px 18px;margin:14px 0;}
+  .northstar .t{font-size:13px;color:var(--purple);font-weight:700;letter-spacing:.5px;}
+  .northstar .v{font-size:19px;font-weight:800;margin:4px 0;}
+  .footer{text-align:center;color:var(--muted);font-size:12.5px;padding:18px;}
+  @media (max-width:680px){
+    .meta,.cards,.toc ol{grid-template-columns:1fr;columns:1;}
+    .cover,.toc,.body{padding-left:22px;padding-right:22px;}
+  }
+  @media print{
+    body{background:#fff;}
+    .wrap{box-shadow:none;max-width:100%;}
+    .toc{display:none;}
+    section{page-break-inside:avoid;}
+    table,pre,.card,.northstar,.story{page-break-inside:avoid;}
+    .cover{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    thead th{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== Cover ===== -->
+  <div class="cover">
+    <h1>《聚合计算》产品需求文档（PRD）</h1>
+    <div class="sub">微信小程序 · 计算工具聚合器 · 产品迭代基线</div>
+    <div class="meta">
+      <div><b>产品名称</b><span>聚合计算（<code>family-budget-calculator</code>）</span></div>
+      <div><b>文档版本</b><span><b>v1.3</b>（同步国潮塔罗分包 · 工具重排 · 保存链路修复）</span></div>
+      <div><b>文档类型</b><span>产品需求文档（PRD）</span></div>
+      <div><b>作者 / 审核</b><span>产品+技术共建 / 产品通</span></div>
+      <div><b>最后更新</b><span>2026-07-17</span></div>
+      <div><b>适用范围</b><span>微信小程序端（无 Web / 无后端；本地存储已落地）</span></div>
+      <div style="grid-column:1/3"><b>配套文档</b><span><code>开发改动记录.md</code>（技术权威）· <code>测试报告.md</code>（质量权威）· <code>ad_placement_guide.md</code>（广告位）</span></div>
+    </div>
+    <div class="rev">
+      <b>v1.3 修订说明（基于最新代码 2026-07-17）：</b>① 新增<b>国潮塔罗分包（FR-11）</b>——22 张大阿尔卡纳国潮卡面（jpg）、3 牌阵（每日一牌 / 圣三角 / 决策），分包化承载，主包保持精简；② 首页工具重排为 7 个（塔罗置顶）；③ 修复<b>保存链路回归</b>：共享 saveImage 的 draw 签名改首位 canvas 后，6 个非塔罗工具 draw 未同步导致按钮变灰，已补齐签名 + calc-page 兜底 + 回归测试（SAVE-1 已修复）；④ 自动化测试扩展为 <b>172 项</b>（test_tarot 55 + test_all 117，覆盖 7 工具逻辑 + 计算后各按钮 + 保存链路）。据此更新 §0/§1.2/§3/§4/§5/§8/§10/§11/§12。
+    </div>
+  </div>
+
+  <!-- ===== TOC ===== -->
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s0">一页纸摘要</a></li>
+      <li><a href="#s1">问题陈述（Why）</a></li>
+      <li><a href="#s2">目标用户与画像</a></li>
+      <li><a href="#s3">用户故事</a></li>
+      <li><a href="#s4">产品架构（解决方案）</a></li>
+      <li><a href="#s5">功能需求（FR）</a></li>
+      <li><a href="#s6">指标体系（Metrics）</a></li>
+      <li><a href="#s7">竞品分析</a></li>
+      <li><a href="#s8">商业化（广告）</a></li>
+      <li><a href="#s9">数据需求与规划</a></li>
+      <li><a href="#s10">非功能需求</a></li>
+      <li><a href="#s11">已知问题与技术债</a></li>
+      <li><a href="#s12">路线图与优先级（RICE）</a></li>
+      <li><a href="#s13">风险与决策责任</a></li>
+    </ol>
+  </nav>
+
+  <div class="body">
+
+    <!-- ===== 0 ===== -->
+    <section id="s0">
+      <h2>0. 一页纸摘要（给决策者）</h2>
+      <div class="cards">
+        <div class="card"><h4>它是什么</h4><p>微信小程序，计算工具聚合器。首页卡片为统一入口，已上线 <b>7 个计算工具</b>（国潮塔罗、财富层级、存钱段位🔥、亲戚关系、家庭支出、BMI、时光进度条，塔罗为分包）+ <b>1 个历史记录中心</b>，纯前端计算 + 本地存储 + 广告变现。</p></div>
+        <div class="card"><h4>为什么做</h4><p>填补"轻量、即时、不用下载 App"的家庭测算需求；以高频可分享工具换取广告曝光。</p></div>
+        <div class="card"><h4>当前状态</h4><p>10 个页面（首页 + 7 计算工具[含塔罗分包 2 页] + 历史记录中心）全部上线，<b>172 项自动化测试通过</b>（test_tarot 55 + test_all 117）；技术基建优秀（注册表驱动，加工具近乎零成本）；<b>留存短板已部分缓解</b>（本地历史中心已上线，仍属单机存储）。</p></div>
+        <div class="card"><h4>北极星指标</h4><p>周活跃工具使用次数（定义见 §6）。</p></div>
+        <div class="card"><h4>下一步最高 ROI</h4><p>① 加 1–2 个刚需工具（房贷 / 税后工资）；② 历史功能增强（去重 + 常驻入口 + 文案修正）。</p></div>
+        <div class="card"><h4>最大风险</h4><p>金融类工具审核措辞、本地存储敏感财务数据的隐私合规义务。</p></div>
+      </div>
+    </section>
+
+    <!-- ===== 1 ===== -->
+    <section id="s1">
+      <h2>1. 问题陈述（Why）</h2>
+      <h3>1.1 背景</h3>
+      <p>用户在日常生活中有大量"随手算一笔"的需求（支出汇总、BMI、存钱能力、亲戚称呼），但：① 打开 Excel / 记账 App 太重；② 零散的单一计算器小程序功能孤立、无法沉淀；③ 微信内缺少一个"轻、全、可分享"的聚合入口。</p>
+
+      <h3>1.2 用户问题（痛点 → 假设标注）</h3>
+      <table>
+        <thead><tr><th>痛点</th><th>对应能力</th><th>证据强度</th></tr></thead>
+        <tbody>
+          <tr><td>家庭支出零散，算不清月度/年度总额</td><td>家庭支出计算（15 项 + 饼图）</td><td>内部逻辑合理；<b>尚无用户调研数据支撑</b></td></tr>
+          <tr><td>不知道自己"算不算有钱"</td><td>财富层级测试（7 级对标）</td><td>同上</td></tr>
+          <tr><td>想存钱但没概念"能存多少"</td><td>存钱段位 + 财富年龄</td><td>同上</td></tr>
+          <tr><td>BMI 不知道胖瘦区间</td><td>BMI 计算器（中国标准）</td><td>同上</td></tr>
+          <tr><td>想直观感受"今年/人生过了多少"</td><td>时光进度条</td><td>同上（偏娱乐）</td></tr>
+          <tr><td>聚会时叫错亲戚称呼</td><td>亲戚关系归约引擎</td><td>同上</td></tr>
+          <tr><td>想娱乐化测试运势 / 心理投射（轻量、非算命）</td><td>国潮塔罗（分包，22 张 + 3 牌阵）</td><td>同上（偏娱乐，定位规避审核）</td></tr>
+          <tr><td>算完的结果没法留存，下次要重输</td><td>历史记录中心（本地存储）</td><td>内部逻辑合理；<b>尚无留存率数据</b></td></tr>
+        </tbody>
+      </table>
+      <div class="note warn"><b>⚠️ 数据诚实声明：</b>以上痛点基于产品逻辑推导与常识，<b>项目目前无任何用户调研 / 埋点数据</b>。按产品规范，上线后应通过 §6 指标与用户访谈验证，避免"自嗨式需求"。</div>
+
+      <h3>1.3 业务目标</h3>
+      <ul>
+        <li><b>G1（变现）</b>：通过流量主广告实现稳定小额收入，单位经济模型依赖曝光量 × eCPM。</li>
+        <li><b>G2（留存）</b>：以"本地历史 + 可分享的结果卡"提升复访与自发传播。</li>
+        <li><b>G3（扩展）</b>：利用注册表基建持续低成本的加工具，扩大覆盖面与搜索命中。</li>
+      </ul>
+
+      <h3>1.4 非目标（Non-goals）★ 产品专家强制项</h3>
+      <p>明确本产品<b>不做什么</b>，防止范围蔓延：</p>
+      <ul>
+        <li class="nogo">❌ 不做完整记账 App（不与鲨鱼记账/随手记竞争，不建账本、不做分类统计报表）。</li>
+        <li class="nogo">❌ 不做社交 / 社区 / 排行榜（当前无账户体系，不引入社交关系）。</li>
+        <li class="nogo">❌ 不做专业财务顾问 / 投资建议（工具仅做"测算参考"，不构成任何建议）。</li>
+        <li class="nogo">❌ 不做跨端 Web App（当前以小程序为唯一载体）。</li>
+        <li class="nogo">❌ v1 不做账户体系 / 云端同步（本地历史中心已落地；跨设备永久留存列为后续演进，见 §9）。</li>
+      </ul>
+
+      <h3>1.5 成功指标预览</h3>
+      <p>见 §6。上线后首季度以"建立埋点 + 拿到基线"为首要成功标准。</p>
+    </section>
+
+    <!-- ===== 2 ===== -->
+    <section id="s2">
+      <h2>2. 目标用户与画像</h2>
+      <ul>
+        <li><b>核心</b>：关注家庭收支、想了解"钱花哪了"的普通家庭用户（25–45 岁，有育儿/房贷压力）。</li>
+        <li><b>次级</b>：对"财富段位 / 储蓄习惯 / 健康体重"有自我量化诉求的年轻用户。</li>
+        <li><b>泛娱乐</b>：节日/聚会需厘清亲戚称呼者；对"时间可视化"有兴趣者。</li>
+      </ul>
+      <div class="note info"><b>画像可信度：</b>当前为假设画像，需在路线图一期安排 1 次用户访谈/问卷（见 §6、§12）校准。</div>
+    </section>
+
+    <!-- ===== 3 ===== -->
+    <section id="s3">
+      <h2>3. 用户故事（User Stories）★ 新增</h2>
+      <p>格式：<code>作为 [角色]，我希望 [行为]，以便 [价值]</code></p>
+      <div class="story"><b>US-0（通用）</b>：作为用户，我希望把计算结果保存为图片并分享给好友，以便把"我的数字"方便地传给他人。</div>
+      <div class="story"><b>US-1（家庭支出）</b>：作为家庭财务负责人，我希望逐项填入支出后即时看到月度/年度总额与保险占比，以便判断开支结构是否健康。</div>
+      <div class="story"><b>US-2（财富层级）</b>：作为资产配置者，我希望输入资产负债后知道自己的财富等级，以便对标"我在哪一层"。</div>
+      <div class="story"><b>US-3（存钱段位）</b>：作为想存钱的年轻人，我希望算出储蓄率对应的"段位"和"财富年龄"，以便用趣味方式了解自己的储蓄习惯。</div>
+      <div class="story"><b>US-4（BMI）</b>：作为关注健康的人，我希望输入身高体重得到 BMI 与中国标准分类，以便知道体重是否在健康区间。</div>
+      <div class="story"><b>US-5（时光进度条）</b>：作为对时间敏感的用户，我希望自动看到今年/人生进度，以便直观感受时间流逝。</div>
+      <div class="story"><b>US-6（亲戚关系）</b>：作为常参加家庭聚会的用户，我希望从"我"拼出关系链查到正确称呼，以便在亲戚面前不叫错人。</div>
+      <div class="story"><b>US-7（历史记录，已上线）</b>：作为回头用户，我希望计算结果能自动留存在本机，以便下次打开无需重新输入、还能一键恢复重算。</div>
+      <div class="story"><b>US-8（暗色主题，已上线）</b>：作为夜间或弱光下使用的用户，我希望能切换到暗色主题，以便不刺眼、更省电。</div>
+      <div class="story"><b>US-9（国潮塔罗，已上线）</b>：作为想轻量娱乐测试运势的用户，我希望选牌阵抽牌后看到正/逆位解读并能保存分享长图，以便趣味自测与社交传播（定位"娱乐测试"，规避算命类目审核）。</div>
+    </section>
+
+    <!-- ===== 4 ===== -->
+    <section id="s4">
+      <h2>4. 产品架构（解决方案）</h2>
+      <h3>4.1 总体架构</h3>
+      <pre><code>┌─────────────────────────────────────────────┐
+│           微信小程序（前端，纯计算）            │
+│  pages/home（首页卡片）+ 7 个计算页 +          │
+│  subpackages/tarot（塔罗分包：22 卡面 + 3 牌阵）│
+│  pages/history（历史记录中心）                │
+│  通用基建：calc-input / calc-page / report /  │
+│           format / history / tools 注册表      │
+└───────────────┬───────────────────┬──────────┘
+                │                   │
+         Banner 广告(常驻)     插屏广告(返回首页)
+                │                   │
+       微信广告 SDK（流量主）◄──┘
+                │
+        （当前无后端 / 无账户；
+         本地持久化已通过 history 实现，仍属单机存储）</code></pre>
+      <ul>
+        <li>计算全部在端上完成，无联网请求、无用户账户、无数据上传。</li>
+        <li>数据当前<b>可本机留存</b>（见 §9 DATA-1：方案 A 已落地），但仍是单机存储、换机/清数据即丢。</li>
+      </ul>
+
+      <h3>4.2 技术栈</h3>
+      <ul>
+        <li>微信小程序原生（WXML / WXSS / JS），无跨端框架；</li>
+        <li>canvas 出图：<code>report.js</code> 已用 <b>Canvas 2.0</b>；支出页饼图仍用旧版 <code>createCanvasContext</code>（P2-2 待迁移）；</li>
+        <li>微信流量主 Banner + 插屏；</li>
+        <li><b>暗色主题</b>：<code>is-dark</code> 类 + <code>app.wxss</code> 中 CSS 变量（<code>--bg-page</code> 等），对全部 10 个页面生效；</li>
+        <li><b>塔罗分包</b>：<code>subpackages/tarot</code>，主包保持精简（~348K），卡面图（22 张 400×400 jpg，~692K）与大阿尔卡纳文案置于分包，规避主包体积与真机 webp 兼容问题；</li>
+        <li>开发者工具导入 <code>miniprogram/</code>，appid <code>wx7fa128d056963af6</code>。</li>
+      </ul>
+
+      <h3>4.3 模块 / 目录架构</h3>
+      <pre><code>miniprogram/
+├── app.js / app.json / app.wxss      入口、全局配置、全局样式（含暗色主题变量）
+├── behaviors/calc-page.js           通用页面行为：返回首页(带插屏)+分享骨架
+├── components/calc-input/           通用输入行（¥ / 万元 / field 透传）
+├── config/tools.js                   中央工具注册表（首页唯一数据源）
+├── pages/  home · index(支出) · wealth · saving · bmi · progress · relation · history
+├── subpackages/tarot/  pages(index/draw) · data/cards.js(22牌+3阵) · assets/jpg(22卡面)
+└── utils/  format.js(金额) · report.js(canvas出图+存相册) · history.js(本地存储层)</code></pre>
+
+      <h3>4.4 核心设计模式：单一数据源 + 通用基建</h3>
+      <ol>
+        <li><b>中央工具注册表 <code>config/tools.js</code></b>：首页卡片唯一数据源；加工具 = 注册路径 + 加一条 <code>{id, icon, name, desc, path, hot?}</code>。</li>
+        <li><b>通用输入组件 <code>calc-input</code></b>：所有数字输入复用。</li>
+        <li><b>通用页面行为 <code>calc-page</code></b>：自动获得返回首页（带插屏）+ 分享骨架。</li>
+        <li><b>通用报告 <code>report.js</code></b>：7 工具共享 canvas 出图 + 存相册（塔罗额外用 <code>canvas.createImage</code> 异步加载卡面）。</li>
+        <li><b>通用历史存储 <code>history.js</code></b>：计算页 <code>saveResult</code> 自动 <code>history.add</code>；历史页读取/收藏/删除，<code>restoreHistory</code> 回填重算。</li>
+        <li><b>全局样式 <code>app.wxss</code></b>：<code>.card</code> / <code>.btn*</code> / <code>.input-row</code> / <code>.ad-banner-wrap</code> + 暗色主题 CSS 变量。</li>
+      </ol>
+      <div class="note info"><b>加新工具标准步骤（4 步）：</b>① <code>app.json</code> 注册页面路径；② <code>config/tools.js</code> 加一项；③ 建页面四件套（<code>.js</code> 混入 <code>calc-page</code>、<code>.json</code> 注册 <code>calc-input</code>、输入用 <code>calc-input</code>、结果用 <code>report.*</code>）；④ 可选复用全局样式与 <code>history.add</code> 持久化。</div>
+    </section>
+
+    <!-- ===== 5 ===== -->
+    <section id="s5">
+      <h2>5. 功能需求（FR）</h2>
+      <p>优先级：<span class="tag p0">P0 已上线</span> <span class="tag p1">P1 高优</span> <span class="tag p2">P2 中优</span> <span class="tag p3">P3 待定</span></p>
+      <table>
+        <thead><tr><th>编号</th><th>功能</th><th>关键输入输出</th><th>优先级</th></tr></thead>
+        <tbody>
+          <tr><td>FR-01</td><td>首页（工具卡片网格，列数自适应，底部 Banner）</td><td>读 tools.js → 卡片</td><td><span class="tag p0">P0</span></td></tr>
+          <tr><td>FR-02</td><td>家庭支出计算（15 项 + 环形饼图 + 保险占比三色）</td><td>15 输入 → 月/年总额、占比、饼图</td><td><span class="tag p0">P0</span></td></tr>
+          <tr><td>FR-03</td><td>财富层级测试（4 资产 + 4 负债 → 7 级）</td><td>8 输入 → 净资产、负债率、等级</td><td><span class="tag p0">P0</span></td></tr>
+          <tr><td>FR-04</td><td>存钱段位（储蓄率→5 段位 + 财富年龄 + 实物对比）</td><td>收入/支出 → 段位、财富年龄</td><td><span class="tag p0">P0🔥</span></td></tr>
+          <tr><td>FR-05</td><td>BMI 计算器（中国标准 4 分类 + 健康区间）</td><td>身高/体重 → BMI、分类</td><td><span class="tag p0">P0</span></td></tr>
+          <tr><td>FR-06</td><td>时光进度条（今年/本月/今日 + 人生进度）</td><td>出生日期(选填) → 多进度条</td><td><span class="tag p0">P0</span></td></tr>
+          <tr><td>FR-07</td><td>亲戚关系（10 键拼链 + 归约引擎 6 规则，55/55 通过）</td><td>关系链 → 称呼</td><td><span class="tag p0">P0</span></td></tr>
+          <tr><td>FR-08</td><td>保存/分享结果卡（report.js 出图 + 存相册 + 微信分享）</td><td>结果 → 图片/分享</td><td><span class="tag p0">P0</span> 跨工具</td></tr>
+          <tr><td>FR-09</td><td>历史记录中心（本地存储：保存/列表/按工具筛选/收藏/删除/恢复重算；首页入口 <code>wx:if historyCount&gt;0</code>）</td><td>计算结果 → 本机历史列表</td><td><span class="tag p0">P0</span></td></tr>
+          <tr><td>FR-10</td><td>暗色主题（is-dark 类 + app.wxss CSS 变量，全 10 页生效）</td><td>主题切换</td><td><span class="tag p0">P0</span></td></tr>
+          <tr><td>FR-11</td><td>国潮塔罗（分包：22 张大阿尔卡纳国潮卡面 jpg + 3 牌阵[每日一牌 / 圣三角 / 决策] + 抽牌动画 + 抽牌结果出图保存）</td><td>选阵→抽牌→正/逆位解读→出图分享</td><td><span class="tag p0">P0🔥</span></td></tr>
+        </tbody>
+      </table>
+      <div class="note info">详细字段、算法、规格见 <code>开发改动记录.md</code> 与 <code>测试报告.md</code>，此处聚焦产品边界。</div>
+    </section>
+
+    <!-- ===== 6 ===== -->
+    <section id="s6">
+      <h2>6. 指标体系（Metrics）★ 新增</h2>
+      <div class="note warn"><b>前提：</b>项目当前<b>仅有本地存储（DATA-1 方案 A），尚无埋点/统计</b>。本节给出"应度量什么 + 如何度量 + 目标值"，上线首季度首要任务是<b>先把埋点建起来拿到基线</b>。</div>
+
+      <h3>6.1 北极星指标（North Star）</h3>
+      <div class="northstar">
+        <div class="t">NORTH STAR</div>
+        <div class="v">周活跃工具使用次数（Weekly Active Calculations, WAC）</div>
+        <div>= 一周内完成至少一次有效计算（产生结果卡）的去重用户数 × 人均使用次数。</div>
+      </div>
+      <div class="note info"><b>理由：</b>直接反映"用户是否真在用产品核心价值"，且天然对齐广告曝光。</div>
+
+      <h3>6.2 驱动指标（Drivers）</h3>
+      <table>
+        <thead><tr><th>指标</th><th>定义</th><th>目标（建议，待基线校准）</th></tr></thead>
+        <tbody>
+          <tr><td>人均周使用次数</td><td>WAC / 周活用户</td><td>≥ 2.5 次</td></tr>
+          <tr><td>分享率</td><td>分享次数 / 结果卡生成数</td><td>≥ 12%</td></tr>
+          <tr><td>保存图片率</td><td>保存次数 / 结果卡生成数</td><td>≥ 20%</td></tr>
+          <tr><td>历史复用率</td><td>恢复重算次数 / 历史记录数</td><td>≥ 30%（历史功能上线后新增）</td></tr>
+          <tr><td>新工具渗透率</td><td>新工具上线 30 日内使用用户 / 活跃用户</td><td>≥ 30%</td></tr>
+          <tr><td>广告曝光/千次使用</td><td>Banner+插屏曝光 / 千次计算</td><td>行业对比，越高越好</td></tr>
+        </tbody>
+      </table>
+
+      <h3>6.3 健康指标（Guardrails）</h3>
+      <table>
+        <thead><tr><th>指标</th><th>定义</th><th>警戒线</th></tr></thead>
+        <tbody>
+          <tr><td>次日留存</td><td>次日回访用户 / 新增用户</td><td>&lt; 20% 预警</td></tr>
+          <tr><td>7 日留存</td><td>7 日回访 / 新增</td><td>&lt; 8% 预警</td></tr>
+          <tr><td>崩溃率</td><td>崩溃会话 / 总会话</td><td>&gt; 0.5% 预警</td></tr>
+          <tr><td>广告投诉率</td><td>投诉 / 曝光</td><td>监控，避免被限流</td></tr>
+        </tbody>
+      </table>
+
+      <h3>6.4 数据来源</h3>
+      <p>微信自定义分析 / 第三方统计（如接入）。<b>当前状态：本地存储已落地（history.js），但行为埋点未建，列为一期前置任务。</b></p>
+    </section>
+
+    <!-- ===== 7 ===== -->
+    <section id="s7">
+      <h2>7. 竞品分析（Competitive Analysis）★ 新增（客观）</h2>
+      <table>
+        <thead><tr><th>维度</th><th>本产品（聚合）</th><th>垂直单点计算器</th><th>综合记账 App</th></tr></thead>
+        <tbody>
+          <tr><td>功能广度</td><td>宽（6+ 工具，可低成本扩展）</td><td>窄（单一功能做深）</td><td>宽（但重）</td></tr>
+          <tr><td>使用门槛</td><td>极低（无需注册，打开即算）</td><td>低</td><td>中（需建账本）</td></tr>
+          <tr><td>数据沉淀</td><td>当前本地历史（单机），跨设备待补</td><td>通常无</td><td>强（云端账本+报表）</td></tr>
+          <tr><td>社交/分享</td><td>结果卡分享（轻）</td><td>弱</td><td>社区/圈子（重）</td></tr>
+          <tr><td>娱乐化</td><td>强（亲戚关系/进度条/段位）</td><td>弱</td><td>弱</td></tr>
+          <tr><td>变现</td><td>广告</td><td>广告 / 付费功能</td><td>广告 / 会员</td></tr>
+          <tr><td>劣势</td><td>单工具深度不及垂直；缺云同步</td><td>功能孤立、难留存</td><td>太重、打开成本高</td></tr>
+        </tbody>
+      </table>
+      <div class="note info"><b>客观结论：</b>本产品的差异化在"轻 + 全 + 娱乐化 + 零成本扩展"，适合做"随手算"入口；<b>不应</b>与垂直/记账 App 在"深度分析、云端账本"上硬碰。这与 §1.4 Non-goals 一致。</div>
+    </section>
+
+    <!-- ===== 8 ===== -->
+    <section id="s8">
+      <h2>8. 商业化（广告）</h2>
+      <table>
+        <thead><tr><th>位置</th><th>adUnitId</th><th>类型</th><th>触发</th></tr></thead>
+        <tbody>
+          <tr><td>首页底部</td><td><code>adunit-banner-home-002</code></td><td>Banner</td><td>常驻</td></tr>
+          <tr><td>支出/财富/存钱/BMI/进度/亲戚/塔罗 底部</td><td>各自 <code>adunit-banner-*-001</code>（塔罗为 <code>adunit-banner-tarot-001</code>，覆盖牌阵页+抽牌页）</td><td>Banner</td><td>常驻</td></tr>
+          <tr><td>返回首页</td><td>（待替换真实插屏 id）</td><td>插屏</td><td>5 分钟频率（<code>app.js</code>）</td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>上线前替换占位插屏 id；</li>
+        <li>7 个工具页 + 首页共 <b>8 个 Banner</b>（塔罗分包 1 个，覆盖其 2 个页面） 已在 <code>ad_placement_guide.md</code> 登记；<b>历史页暂无 Banner</b>（保持工具类页面清爽）；</li>
+        <li>所有 Banner id 与代码、文档三方一致。</li>
+      </ul>
+    </section>
+
+    <!-- ===== 9 ===== -->
+    <section id="s9">
+      <h2>9. 数据需求与规划（DATA-1）</h2>
+      <h3>9.1 当前状态</h3>
+      <p><b>方案 A（本地存储）已落地</b>：<code>utils/history.js</code> 提供 <code>add / getAll / getByTool / star / remove / clear</code>，各计算页 <code>saveResult</code> 自动写入本机，历史页可读取/收藏/删除/恢复重算。</p>
+      <ul>
+        <li>剩余短板：仍是<b>单机存储</b>——换手机、重装微信或清缓存即丢失；受 <code>wx.setStorageSync</code> <b>10MB 上限</b>约束；不支持跨设备同步。</li>
+        <li>跨设备永久留存仍待方案 B/C。</li>
+      </ul>
+
+      <h3>9.2 可选方案</h3>
+      <table>
+        <thead><tr><th>方案</th><th>持久化</th><th>登录</th><th>服务器</th><th>成本</th><th>适用</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr><td>A. 本地存储</td><td>单机（换机/清数据丢，10MB 上限）</td><td>否</td><td>否</td><td>免费</td><td>一期顶留存</td><td><span class="tag ok">✅ 已落地</span></td></tr>
+          <tr><td>B. 微信云开发</td><td>跨设备永久（openid 无感）</td><td>否</td><td>否</td><td>~19.9 元/月</td><td>要"永久留存"时</td><td>待定</td></tr>
+          <tr><td>C. 自建 Docker 后端</td><td>完全自控、可关系库</td><td>否（wx.login）</td><td>是（备案域名+HTTPS）</td><td>~40–60 元/月+域名</td><td>需完全掌控时</td><td>待定</td></tr>
+        </tbody>
+      </table>
+
+      <h3>9.3 隐私合规（独立强调）</h3>
+      <p>工资/家庭支出属<b>个人信息</b>，且现已落地本地存储（敏感财务数据留存本机），无论哪方案都须：</p>
+      <ol>
+        <li>小程序后台填《个人信息保护指引》；</li>
+        <li>收集前弹 <code>wx.requirePrivacyAuthorize</code> 授权；</li>
+        <li>方案 C 因数据在自有服务器，须额外做数据安全评估与合规责任；</li>
+        <li>默认最小化收集、明确告知用途、提供删除通道（历史页已有"清空"入口，对应此义务）。</li>
+      </ol>
+    </section>
+
+    <!-- ===== 10 ===== -->
+    <section id="s10">
+      <h2>10. 非功能需求</h2>
+      <table>
+        <thead><tr><th>类别</th><th>要求</th></tr></thead>
+        <tbody>
+          <tr><td>性能</td><td>端上计算、即时响应；canvas 出图耗时可控</td></tr>
+          <tr><td>兼容性</td><td>适配主流微信版本；canvas 旧 API 弃用告警（P2-2）待迁移 Canvas 2D</td></tr>
+          <tr><td>可用性</td><td>统一按钮规范；空结果禁用分享、保存前 <code>showToast</code>；历史入口渐进披露</td></tr>
+          <tr><td>主题</td><td>暗色主题（<code>is-dark</code> + app.wxss 变量）覆盖全部 10 页，遵循 WCAG 对比度</td></tr>
+          <tr><td>隐私合规</td><td>见 §9.3（历史数据含个人财务信息，本地亦需隐私指引+授权）</td></tr>
+          <tr><td>可扩展性</td><td>新工具 ≤ 4 步（§4.4）</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ===== 11 ===== -->
+    <section id="s11">
+      <h2>11. 已知问题与技术债</h2>
+      <table>
+        <thead><tr><th>编号</th><th>级别</th><th>描述</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr><td>P1-1</td><td><span class="tag ok">已修复</span></td><td>存钱负支出致储蓄率&gt;100% → <code>Math.max(0,…)</code></td><td><span class="tag ok">✅</span></td></tr>
+          <tr><td>P1-2</td><td><span class="tag ok">已修复</span></td><td>财富页淡入动画不播 → 改 <code>@keyframes</code></td><td><span class="tag ok">✅</span></td></tr>
+          <tr><td>SAVE-1</td><td><span class="tag ok">已修复</span></td><td>共享 saveImage 的 draw 签名改首位 canvas 后，6 个非塔罗工具 draw 未同步 → 抽牌/保存时 <code>isSaving</code> 永久 true、按钮变灰无反应；已补齐 6 工具 draw 签名 + calc-page 加 try/catch 兜底 + 回归测试（test_tarot / test_all）</td><td><span class="tag ok">✅</span></td></tr>
+          <tr><td>IMG-1</td><td><span class="tag ok">已修复</span></td><td>塔罗保存长图每张牌底部浅灰分隔线压住第 3 行解读文字；已移除该线（卡间由位置标签+牌名分隔）</td><td><span class="tag ok">✅</span></td></tr>
+          <tr><td>P2-1</td><td><span class="tag ok">已修复</span></td><td>插屏监听器累积 → <code>done</code> 内自清理</td><td><span class="tag ok">✅</span></td></tr>
+          <tr><td>P2-2</td><td><span class="tag pending">待处理</span></td><td><code>createCanvasContext</code> 弃用，功能正常，迁移需真机回归</td><td><span class="tag pending">⏳</span></td></tr>
+          <tr><td>P1-3</td><td><span class="tag pending">待定</span></td><td>实时算 vs 点按钮交互不统一（产品决策）</td><td><span class="tag pending">⏳</span></td></tr>
+          <tr><td>P3-1</td><td><span class="tag pending">待定</span></td><td>输入无上限校验</td><td><span class="tag pending">⏳</span></td></tr>
+          <tr><td>DATA-1</td><td><span class="tag mid">中（已缓解）</span></td><td>本地存储已落地（方案 A）；跨设备永久留存待 B/C</td><td><span class="tag pending">⏳ 方案 A 完成</span></td></tr>
+          <tr><td>DOC-1</td><td>低</td><td>原 README 重复描述问题已随 <code>README.md</code> 删除消除；现缺 README 为文档缺口</td><td><span class="tag pending">⏳</span></td></tr>
+          <tr><td>HIS-1</td><td><span class="tag mid">中</span></td><td>BMI/进度条文案写"数据不保存"，但实际 <code>saveResult</code> 已写入历史，文案与行为矛盾（误导用户）</td><td><span class="tag pending">⏳</span></td></tr>
+          <tr><td>HIS-2</td><td><span class="tag low">低</span></td><td>历史入口 <code>wx:if="{{historyCount&gt;0}}"</code>，全新用户（无记录）首页不可见，且无 tabBar，难发现入口</td><td><span class="tag pending">⏳</span></td></tr>
+          <tr><td>HIS-3</td><td><span class="tag low">低</span></td><td>重复点"保存"会写入多条相同历史（无去重；<code>isSaving</code> 仅拦"保存中"）</td><td><span class="tag pending">⏳</span></td></tr>
+          <tr><td>DATE-1</td><td><span class="tag low">低</span></td><td>进度条出生日期选择器年份写死 <code>end="2026-12-31"</code>，2027 年起上限落后于当前</td><td><span class="tag pending">⏳</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ===== 12 ===== -->
+    <section id="s12">
+      <h2>12. 路线图与优先级（RICE）★ 调整（附数据依据）</h2>
+      <div class="note info"><b>优先级方法论：</b>用 RICE（Reach×Impact×Confidence÷Effort）排序。Reach/Impact 为<b>产品估算</b>，标注"待数据校准"，避免伪装精确。</div>
+      <table>
+        <thead><tr><th>候选</th><th>Reach</th><th>Impact</th><th>Conf</th><th>Effort(人日)</th><th>RICE</th><th>排期</th></tr></thead>
+        <tbody>
+          <tr><td>本地历史中心(A)</td><td>高</td><td>3</td><td>0.9</td><td>3</td><td><span class="tag high">高</span></td><td><span class="tag ok">✅ 一期已交付</span></td></tr>
+          <tr><td>暗色主题</td><td>中</td><td>1</td><td>0.9</td><td>2</td><td><span class="tag low">低</span></td><td><span class="tag ok">✅ 已交付</span></td></tr>
+          <tr><td>房贷月供计算器</td><td>高</td><td>3</td><td>0.8</td><td>4</td><td><span class="tag high">高</span></td><td>一期</td></tr>
+          <tr><td>税后工资/五险一金</td><td>高</td><td>3</td><td>0.8</td><td>4</td><td><span class="tag high">高</span></td><td>一期</td></tr>
+          <tr><td>单位换算器</td><td>中</td><td>2</td><td>0.9</td><td>1</td><td><span class="tag mid">中高</span></td><td>一期</td></tr>
+          <tr><td>历史功能增强（去重+常驻入口+文案修正）</td><td>中</td><td>2</td><td>0.9</td><td>2</td><td><span class="tag mid">中高</span></td><td>一期收尾</td></tr>
+          <tr><td>存款/复利计算器</td><td>中</td><td>2</td><td>0.8</td><td>3</td><td><span class="tag mid">中</span></td><td>二期</td></tr>
+          <tr><td>倒数日/纪念日</td><td>中</td><td>2</td><td>0.8</td><td>3</td><td><span class="tag mid">中</span></td><td>二期</td></tr>
+          <tr><td>统一海报模板(修P2-2)</td><td>全量</td><td>2</td><td>0.7</td><td>5</td><td><span class="tag mid">中</span></td><td>二期</td></tr>
+          <tr><td>生日/生肖娱乐</td><td>低</td><td>2</td><td>0.7</td><td>3</td><td><span class="tag low">低中</span></td><td>三期</td></tr>
+          <tr><td>工具搜索/分类</td><td>高(工具&gt;8时)</td><td>2</td><td>0.9</td><td>3</td><td><span class="tag mid">中</span></td><td>三期触发</td></tr>
+          <tr><td>激励视频变现</td><td>中</td><td>2</td><td>0.6</td><td>4</td><td><span class="tag low">低中</span></td><td>三期</td></tr>
+        </tbody>
+      </table>
+      <h3>分期的产品理由</h3>
+      <ul>
+        <li><b>一期（进行中）</b>：方案 A 本地历史 + 暗色主题已交付；补刚需高 Reach 工具（房贷/税后工资搜索量大、分享强），并收尾历史功能增强（HIS-1/2/3），快速拉升 WAC 与留存。</li>
+        <li><b>二期</b>：补复利/倒数日深化；借统一海报顺手修 P2-2（技术债与体验双赢）。</li>
+        <li><b>三期</b>：娱乐化与平台能力；激励视频开辟第二条变现。</li>
+      </ul>
+      <p><b>数据层演进</b>：一期 A（已落地）→ 需"换机不丢"时升 B/C（见 §9.2）。</p>
+    </section>
+
+    <!-- ===== 13 ===== -->
+    <section id="s13">
+      <h2>13. 风险、开放问题与决策责任 ★ 调整</h2>
+      <table>
+        <thead><tr><th>#</th><th>风险 / 问题</th><th>等级</th><th>责任方 / 状态</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>金融类工具（房贷/税后工资）审核措辞，需定位"测算参考"</td><td><span class="tag high">高</span></td><td>产品 + 法务，待定文案规范</td></tr>
+          <tr><td>2</td><td>隐私合规义务（本地亦含敏感财务数据：指引+授权+删除通道）</td><td><span class="tag high">高</span></td><td>产品牵头，待 §9.3 落地</td></tr>
+          <tr><td>3</td><td>canvas 迁移需真机回归，避免出图回退</td><td><span class="tag mid">中</span></td><td>技术，列入二期</td></tr>
+          <tr><td>4</td><td>交互规范不统一（P1-3）影响规模化加工具</td><td><span class="tag mid">中</span></td><td><b>产品决策</b>，需先定规范</td></tr>
+          <tr><td>5</td><td>数据留存选型：A 已定，B/C 跨设备永久留存未决</td><td><span class="tag high">高</span></td><td><b>待产品+老板决策</b>（见 §9）</td></tr>
+          <tr><td>6</td><td>缺用户调研/埋点，需求与指标无基线</td><td><span class="tag high">高</span></td><td>一期前置：建埋点 + 1 次访谈</td></tr>
+        </tbody>
+      </table>
+      <div class="note warn"><b>决策责任声明：</b>本文档中标注"待定/待决策"项（P1-3 交互规范、DATA-1 选型 B/C、金融文案规范）须由<b>产品负责人</b>在需求评审中拍板并留下结论，禁止工程侧自行默认。</div>
+    </section>
+
+    <div class="footer">本文档为产品迭代基线 · v1.3（同步国潮塔罗分包 · 工具重排 · 保存链路修复）· 2026-07-17 · 指标基线需在埋点上线后回填</div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+/* pages/wealth/wealth.wxss - 财富层级 */
+
+.container { padding-bottom: 40rpx; }
+
+.input-unit { font-size: 28rpx; color: var(--text-muted); margin-left: 8rpx; flex-shrink: 0; }
+
+/* 结果区淡入动画 */
+.result-area { opacity: 0; transform: translateY(30rpx); }
+.result-area.show { animation: fadeInResult 0.5s ease forwards; }
+
+@keyframes fadeInResult {
+  from { opacity: 0; transform: translateY(30rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-gradient-card {
+  background: var(--bg-card-alt);
+  border-radius: 20rpx;
+  padding: 48rpx 32rpx;
+  margin: 24rpx;
+  box-shadow: var(--card-shadow);
+  text-align: center;
+}
+
+.net-asset-label { font-size: 30rpx; color: var(--text-muted); margin-bottom: 12rpx; }
+.net-asset-value { font-size: 56rpx; font-weight: 700; color: #8e44ad; margin-bottom: 32rpx; }
+
+.level-badge { display: inline-flex; align-items: center; padding: 16rpx 40rpx; border-radius: 40rpx; margin-bottom: 24rpx; }
+.level-emoji { font-size: 36rpx; margin-right: 12rpx; }
+.level-name { font-size: 32rpx; font-weight: 600; color: #ffffff; }
+.level-desc { font-size: 26rpx; color: var(--text-secondary); line-height: 1.6; margin-bottom: 32rpx; padding: 0 20rpx; }
+
+.summary-row { display: flex; align-items: center; justify-content: center; margin-top: 16rpx; }
+.summary-item { flex: 1; text-align: center; }
+.summary-label { font-size: 24rpx; color: var(--text-muted); margin-bottom: 8rpx; }
+.summary-value { font-size: 34rpx; font-weight: 600; color: var(--text-primary); }
+.summary-divider { width: 1rpx; height: 60rpx; background: var(--divider); margin: 0 20rpx; }
+
+.level-table { width: 100%; }
+.table-header { display: flex; padding: 16rpx 0; border-bottom: 2rpx solid var(--border); font-size: 24rpx; color: var(--text-muted); font-weight: 500; }
+.table-row { display: flex; padding: 20rpx 0; border-bottom: 1rpx solid var(--border-subtle); align-items: flex-start; }
+.col-level { width: 160rpx; flex-shrink: 0; font-size: 26rpx; color: var(--text-primary); }
+.col-range { width: 140rpx; flex-shrink: 0; font-size: 24rpx; color: var(--text-secondary); padding-right: 12rpx; }
+.col-desc { flex: 1; font-size: 24rpx; color: var(--text-muted); line-height: 1.5; }
+
+.bottom-btn { padding: 40rpx 24rpx 0; }
+.bottom-btn .btn { margin-bottom: 16rpx; }
+
+.disclaimer { font-size: 24rpx; color: var(--text-light); text-align: center; margin-top: 24rpx; padding: 0 20rpx; }

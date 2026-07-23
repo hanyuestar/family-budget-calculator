@@ -1,0 +1,65 @@
+<!-- pages/history/history.wxml - 历史记录页 -->
+<view class="history-container {{isDark ? 'dark' : ''}}">
+
+  <!-- 顶部筛选栏 -->
+  <view class="filter-bar" wx:if="{{toolOptions.length > 0}}">
+    <view
+      class="filter-tag {{filterTool === '' ? 'active' : ''}}"
+      data-id=""
+      bindtap="onFilter"
+    >全部</view>
+    <view
+      class="filter-tag {{filterTool === item.id ? 'active' : ''}}"
+      wx:for="{{toolOptions}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onFilter"
+    >{{item.icon}} {{item.name}}</view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{isEmpty}}">
+    <view class="empty-icon">📋</view>
+    <view class="empty-text">暂无历史记录</view>
+    <view class="empty-sub">使用任一工具计算后将自动留痕</view>
+  </view>
+
+  <!-- 历史列表 -->
+  <view class="history-list" wx:else>
+    <view
+      class="history-item"
+      wx:for="{{list}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onTapItem"
+    >
+      <view class="hi-left">
+        <view class="hi-icon">{{item.toolIcon}}</view>
+      </view>
+      <view class="hi-center">
+        <view class="hi-tool">{{item.toolName}}</view>
+        <view class="hi-summary">{{item.summary}}</view>
+        <view class="hi-time">{{item.timeText}}</view>
+      </view>
+      <view class="hi-right">
+        <view
+          class="hi-star {{item.star ? 'starred' : ''}}"
+          data-id="{{item.id}}"
+          catchtap="onStar"
+        >{{item.star ? '⭐' : '☆'}}</view>
+        <view
+          class="hi-remove"
+          data-id="{{item.id}}"
+          catchtap="onRemove"
+        >✕</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="bottom-actions" wx:if="{{!isEmpty}}">
+    <button class="btn-clear" bindtap="onClear">清空未收藏</button>
+  </view>
+
+  <view class="page-bottom-spacer"></view>
+</view>

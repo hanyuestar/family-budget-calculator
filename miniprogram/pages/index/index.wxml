@@ -1,0 +1,101 @@
+<!-- pages/index/index.wxml - 支出计算页 -->
+<view class="container {{isDark ? 'is-dark' : ''}}" style="background-color: {{isDark ? '#1a1a2e' : '#f5f7fa'}}">
+
+  <!-- 月度固定支出 -->
+  <view class="card">
+    <view class="card-title">🏠 月度固定支出</view>
+
+    <calc-input label="房贷" symbol="¥" desc="月供本金+利息" field="mortgage" value="{{mortgage}}" bind:input="onInput" />
+    <calc-input label="车贷" symbol="¥" desc="车辆月供" field="carLoan" value="{{carLoan}}" bind:input="onInput" />
+    <calc-input label="水电物业" symbol="¥" desc="水费+电费+燃气费+物业费+宽带" field="utility" value="{{utility}}" bind:input="onInput" />
+    <calc-input label="餐饮日用" symbol="¥" desc="买菜+外卖+零食水果+日用品" field="food" value="{{food}}" bind:input="onInput" />
+    <calc-input label="交通出行" symbol="¥" desc="加油/充电+公交地铁+停车+洗车" field="transport" value="{{transport}}" bind:input="onInput" />
+    <calc-input label="通讯费" symbol="¥" desc="两人手机话费+流量" field="telecom" value="{{telecom}}" bind:input="onInput" />
+  </view>
+
+  <!-- 育儿支出 -->
+  <view class="card">
+    <view class="card-title">👶 育儿支出（月度）</view>
+
+    <calc-input label="奶粉尿不湿" symbol="¥" desc="奶粉+尿布+辅食+零食+营养品" field="babyFood" value="{{babyFood}}" bind:input="onInput" />
+    <calc-input label="教育托管" symbol="¥" desc="幼儿园/托班+早教+课外班+学费" field="babyEdu" value="{{babyEdu}}" bind:input="onInput" />
+    <calc-input label="衣物玩具游玩" symbol="¥" desc="衣服鞋帽+玩具绘本+游乐场+疫苗医疗自付" field="babyOther" value="{{babyOther}}" bind:input="onInput" />
+  </view>
+
+  <!-- 月度家庭支出 -->
+  <view class="card">
+    <view class="card-title">👨‍👩‍👧‍👦 月度家庭支出</view>
+
+    <calc-input label="赡养父母" symbol="¥" desc="给双方父母的钱/礼物" field="parents" value="{{parents}}" bind:input="onInput" />
+    <calc-input label="人情往来" symbol="¥" desc="份子钱+请客+红包+节日礼物" field="social" value="{{social}}" bind:input="onInput" />
+  </view>
+
+  <!-- 年度支出 -->
+  <view class="card">
+    <view class="card-title">📅 年度支出</view>
+
+    <calc-input label="商业保险" symbol="¥" desc="重疾+寿险+医疗+意外+车险+家财" field="insurance" value="{{insurance}}" bind:input="onInput" />
+    <calc-input label="旅行度假" symbol="¥" desc="年度旅行+小长假周边游" field="travel" value="{{travel}}" bind:input="onInput" />
+    <calc-input label="数码家电" symbol="¥" desc="换手机+家电维修更换+大件家居" field="electronics" value="{{electronics}}" bind:input="onInput" />
+    <calc-input label="其他年度" symbol="¥" desc="体检+学习+订阅会员+衣服+突发" field="otherAnnual" value="{{otherAnnual}}" bind:input="onInput" />
+  </view>
+
+  <!-- 结果展示区 -->
+  <view class="card result-card">
+    <view class="card-title">📊 计算结果</view>
+
+    <!-- 月度总支出 -->
+    <view class="result-row">
+      <view class="result-label">月度总支出</view>
+      <view class="result-value blue">¥ {{monthlyTotalStr}}</view>
+    </view>
+
+    <!-- 年度总支出 -->
+    <view class="result-row">
+      <view class="result-label">年度总支出</view>
+      <view class="result-value purple">¥ {{annualTotalStr}}</view>
+    </view>
+
+    <!-- 保险占比 -->
+    <view class="result-row">
+      <view class="result-label">保险占比</view>
+      <view class="result-value" style="color: {{insuranceColor}}">{{insuranceRatioStr}}</view>
+    </view>
+
+    <!-- 饼图 -->
+    <view class="pie-section" wx:if="{{annualTotal > 0}}">
+      <view class="pie-title">支出构成占比</view>
+      <canvas canvas-id="pieCanvas" class="pie-canvas"></canvas>
+
+      <!-- 图例列表 -->
+      <view class="legend-list">
+        <view class="legend-item" wx:for="{{pieLegend}}" wx:key="name">
+          <view class="legend-dot" style="background: {{item.color}}"></view>
+          <view class="legend-name">{{item.name}}</view>
+          <view class="legend-value">¥{{item.valueStr}}</view>
+          <view class="legend-pct">{{item.pctStr}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部按钮区 -->
+  <view class="btn-row">
+    <button class="btn btn-home" bindtap="goHome">首页</button>
+    <button class="btn btn-save" bindtap="saveResult" disabled="{{isSaving}}">保存</button>
+    <button class="btn btn-share" open-type="share" disabled="{{annualTotal <= 0}}">分享</button>
+  </view>
+  <view class="tip">点击「保存」可将结果存入历史，方便日后查看</view>
+
+  <!-- 底部留白 -->
+  <view class="page-bottom-spacer"></view>
+
+  <!-- 隐藏canvas（用于保存结果图片） -->
+  <canvas type="2d" id="saveCanvas" class="save-canvas" style="width:300px;height:610px"></canvas>
+
+  <!-- Banner广告（固定底部） -->
+  <view class="ad-banner-wrap">
+    <ad unit-id="adunit-banner-index-001" ad-type="banner" ad-theme="white"></ad>
+  </view>
+
+</view>

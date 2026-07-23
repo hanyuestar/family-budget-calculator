@@ -1,0 +1,45 @@
+<!-- pages/home/home.wxml - 首页（工具选择页） -->
+<view class="home-container {{isDark ? 'is-dark' : ''}}" style="background-color: {{isDark ? '#1a1a2e' : '#f5f7fa'}}">
+
+  <!-- 顶部标题区：渐变背景 -->
+  <view class="home-header">
+    <!-- 主题切换 -->
+    <view class="theme-btn" bindtap="toggleTheme">{{isDark ? '☀️' : '🌙'}}</view>
+    <view class="home-title">{{appName}}</view>
+    <view class="home-subtitle">多种场景计算工具，随手就算</view>
+
+    <!-- 历史入口 -->
+    <view class="history-entry" bindtap="goHistory" wx:if="{{historyCount > 0}}">
+      <text class="history-entry-text">📋 历史记录</text>
+      <text class="history-entry-badge">{{historyCount}}</text>
+    </view>
+  </view>
+
+  <!-- 工具卡片列表 -->
+  <view class="tool-list cols-{{gridCols}}">
+    <view
+      class="tool-card"
+      wx:for="{{tools}}"
+      wx:key="id"
+      data-path="{{item.path}}"
+      bindtap="goTool"
+    >
+      <view class="tool-icon">{{item.icon}}</view>
+      <view class="tool-info">
+        <view class="tool-name">{{item.name}}</view>
+        <view class="tool-desc">{{item.desc}}</view>
+      </view>
+      <view class="hot-corner" wx:if="{{item.hot}}">🔥</view>
+    </view>
+  </view>
+
+  <!-- 底部小字 -->
+  <view class="home-footer">更多工具持续更新中...</view>
+
+  <!-- 底部留白 + Banner -->
+  <view class="page-bottom-spacer"></view>
+  <view class="ad-banner-wrap">
+    <ad unit-id="adunit-banner-home-002" ad-type="banner" ad-theme="white"></ad>
+  </view>
+
+</view>

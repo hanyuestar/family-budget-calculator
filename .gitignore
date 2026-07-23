@@ -1,0 +1,17 @@
+# WorkBuddy 内部数据（含记忆/工作偏好，非源码，禁止上传）
+.workbuddy/
+
+# 塔罗卡面设计源文件（运行时仅依赖 miniprogram/subpackages/tarot/assets/jpg/）
+tarot-sources/
+
+# 旧版备份压缩包
+*.7z
+
+# 依赖
+node_modules/
+
+# 操作系统 / 编辑器冗余文件
+.DS_Store
+Thumbs.db
+*.swp
+*.swo

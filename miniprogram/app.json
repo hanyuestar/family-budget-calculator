@@ -1,0 +1,29 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/history/history",
+    "pages/index/index",
+    "pages/wealth/wealth",
+    "pages/saving/saving",
+    "pages/bmi/bmi",
+    "pages/progress/progress",
+    "pages/relation/relation"
+  ],
+  "window": {
+    "navigationBarTitleText": "聚合计算",
+    "navigationBarBackgroundColor": "#4A90D9",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f7fa"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "subPackages": [
+    {
+      "root": "subpackages/tarot",
+      "pages": [
+        "pages/index/index",
+        "pages/draw/draw"
+      ]
+    }
+  ]
+}

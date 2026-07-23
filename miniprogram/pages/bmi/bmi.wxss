@@ -1,0 +1,20 @@
+/* pages/bmi/bmi.wxss - BMI 计算器 */
+
+.container { min-height: 100vh; background-color: var(--bg-page); }
+
+.rank-badge-wrap { display: flex; justify-content: center; margin-bottom: 24rpx; }
+.rank-badge { display: flex; align-items: center; justify-content: center; padding: 12rpx 48rpx; border-radius: 40rpx; }
+.rank-name { font-size: 34rpx; font-weight: 700; color: #ffffff; }
+
+.big-rate-wrap { text-align: center; padding: 20rpx 0; }
+.big-rate-label { font-size: 26rpx; color: var(--text-muted); margin-bottom: 8rpx; }
+.big-rate-value { font-size: 72rpx; font-weight: 800; line-height: 1.1; }
+
+.divider-line { width: 100%; height: 1rpx; background: linear-gradient(90deg, transparent, var(--divider), transparent); margin: 28rpx 0; }
+
+.forecast-wrap { background: var(--bg-card-alt); border-radius: 16rpx; padding: 24rpx; margin-top: 24rpx; text-align: center; }
+.forecast-label { font-size: 26rpx; color: var(--text-muted); margin-bottom: 8rpx; }
+.forecast-sub { font-size: 32rpx; color: #27ae60; font-weight: 700; line-height: 1.5; margin-bottom: 12rpx; }
+.forecast-compare { font-size: 26rpx; color: var(--text-secondary); line-height: 1.5; padding-top: 8rpx; border-top: 1rpx dashed var(--divider-dashed); }
+
+.disclaimer { font-size: 22rpx; color: var(--text-light); text-align: center; margin-top: 24rpx; }

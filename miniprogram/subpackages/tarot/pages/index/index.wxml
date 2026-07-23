@@ -1,0 +1,38 @@
+<!-- subpackages/tarot/pages/index/index.wxml - 牌阵选择 -->
+<view class="container {{isDark ? 'is-dark' : ''}}">
+
+  <!-- 顶部标题区 -->
+  <view class="tarot-header">
+    <view class="tarot-title">国潮塔罗</view>
+    <view class="tarot-sub">抽一张牌，照见今天的状态与提醒</view>
+    <view class="disclaimer-inline">娱乐测试 · 心理投射，不放任何预测承诺</view>
+  </view>
+
+  <!-- 牌阵列表 -->
+  <view class="spread-list">
+    <view
+      class="spread-card"
+      wx:for="{{spreads}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="goDraw"
+    >
+      <view class="spread-emoji">{{item.emoji}}</view>
+      <view class="spread-info">
+        <view class="spread-name">{{item.name}}</view>
+        <view class="spread-desc">{{item.desc}}</view>
+      </view>
+      <view class="spread-count">{{item.count}} 张</view>
+      <view class="spread-arrow">›</view>
+    </view>
+  </view>
+
+  <view class="tip">所有牌面由 AI 生成插画，仅供娱乐参考</view>
+
+  <view class="page-bottom-spacer"></view>
+
+  <view class="ad-banner-wrap">
+    <ad unit-id="adunit-banner-tarot-001" ad-type="banner" ad-theme="white"></ad>
+  </view>
+
+</view>

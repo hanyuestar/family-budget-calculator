@@ -1,0 +1,25 @@
+/* pages/index/index.wxss - 支出计算页 */
+
+.container { padding-bottom: 40rpx; }
+
+.result-card { background: var(--bg-card); }
+
+.result-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20rpx 0; border-bottom: 1rpx solid var(--border-light);
+}
+.result-label { font-size: 30rpx; color: var(--text-secondary); }
+.result-value { font-size: 40rpx; font-weight: 700; }
+.result-value.blue { color: #4A90D9; }
+.result-value.purple { color: #8e44ad; }
+
+.pie-section { margin-top: 32rpx; }
+.pie-title { font-size: 30rpx; font-weight: 600; text-align: center; margin-bottom: 20rpx; color: var(--text-secondary); }
+.pie-canvas { width: 170px; height: 170px; margin: 0 auto; display: block; }
+
+.legend-list { margin-top: 24rpx; }
+.legend-item { display: flex; align-items: center; padding: 16rpx 0; border-bottom: 1rpx solid var(--border-subtle); }
+.legend-dot { width: 20rpx; height: 20rpx; border-radius: 50%; margin-right: 16rpx; flex-shrink: 0; }
+.legend-name { font-size: 28rpx; color: var(--text-secondary); width: 160rpx; flex-shrink: 0; }
+.legend-value { font-size: 28rpx; color: var(--text-primary); font-weight: 500; flex: 1; text-align: right; }
+.legend-pct { font-size: 26rpx; color: var(--text-muted); width: 100rpx; text-align: right; flex-shrink: 0; }

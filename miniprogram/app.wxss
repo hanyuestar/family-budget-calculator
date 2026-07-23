@@ -1,0 +1,136 @@
+/* app.wxss - 全局样式与主题变量 */
+
+/* ===== 亮色默认变量（定义在 page 上，继承到所有子元素） ===== */
+page {
+  --bg-page: #f5f7fa;
+  --bg-card: #ffffff;
+  --bg-card-alt: #f8f9fb;
+  --bg-input: #f8f9fb;
+  --bg-bar: #eef0f3;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --text-light: #bbbbbb;
+  --border: #ececec;
+  --border-light: #f0f0f0;
+  --border-subtle: #f5f5f5;
+  --divider: #dddddd;
+  --divider-dashed: #e0e0e0;
+  --shadow-card: rgba(0,0,0,0.06);
+  --shadow-block: rgba(0,0,0,0.05);
+  --ad-bg: #ffffff;
+  --ad-shadow: rgba(0,0,0,0.06);
+  --btn-secondary-bg: #f0f0f0;
+  --btn-secondary-text: #666666;
+  --card-shadow: 0 4rpx 20rpx rgba(0,0,0,0.06);
+  --bg-stripe: #f8f9fb;
+
+  background-color: #f5f7fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 28rpx;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* ===== 暗色覆写：通过根容器 .is-dark 重定义变量 ===== */
+.is-dark {
+  --bg-page: #1a1a2e;
+  --bg-card: #222240;
+  --bg-card-alt: #2a2a4a;
+  --bg-input: #2a2a4a;
+  --bg-bar: #2d2d50;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-muted: #888888;
+  --text-light: #555555;
+  --border: #333360;
+  --border-light: #2a2a4a;
+  --border-subtle: #282848;
+  --divider: #3a3a5a;
+  --divider-dashed: #333360;
+  --shadow-card: rgba(0,0,0,0.30);
+  --shadow-block: rgba(0,0,0,0.25);
+  --ad-bg: #222240;
+  --ad-shadow: rgba(0,0,0,0.30);
+  --btn-secondary-bg: #333360;
+  --btn-secondary-text: #b0b0b0;
+  --card-shadow: 0 4rpx 20rpx rgba(0,0,0,0.30);
+  --bg-stripe: #2a2a4a;
+}
+
+/* ===== 卡片 ===== */
+.card {
+  background: var(--bg-card);
+  border-radius: 20rpx;
+  box-shadow: var(--card-shadow);
+  padding: 32rpx;
+  margin: 24rpx;
+}
+
+.card-title {
+  font-size: 34rpx; font-weight: 600;
+  margin-bottom: 24rpx; display: flex; align-items: center;
+}
+
+/* ===== 按钮 ===== */
+.btn {
+  display: flex; align-items: center; justify-content: center;
+  height: 80rpx; border-radius: 40rpx; font-size: 28rpx;
+  font-weight: 600; border: none; width: 100%;
+  box-sizing: border-box; padding: 0 12rpx;
+  white-space: nowrap; overflow: hidden;
+}
+
+.btn-primary { background: linear-gradient(135deg, #4A90D9, #357AbD); color: #ffffff; }
+.btn-secondary { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); }
+.btn-calc { background: linear-gradient(135deg, #f093fb, #f5576c); color: #ffffff; }
+
+.btn-row {
+  display: flex; gap: 16rpx; padding: 0 24rpx; margin-bottom: 16rpx;
+}
+.btn-row .btn { flex: 1; margin-bottom: 0; min-width: 0; }
+
+.btn-home { background: linear-gradient(135deg, #667eea, #764ba2); color: #ffffff; }
+.btn-save { background: linear-gradient(135deg, #11998e, #38ef7d); color: #ffffff; }
+.btn-share { background: linear-gradient(135deg, #fa709a, #fee140); color: #ffffff; }
+
+/* ===== 输入框 ===== */
+.input-row { margin-bottom: 28rpx; }
+
+.input-label {
+  font-size: 30rpx; font-weight: 500; color: var(--text-primary); margin-bottom: 8rpx;
+}
+
+.input-wrapper {
+  display: flex; align-items: center;
+  background: var(--bg-input); border-radius: 12rpx;
+  padding: 0 20rpx; height: 80rpx; border: 2rpx solid var(--border);
+}
+
+.input-symbol { font-size: 32rpx; color: var(--text-muted); margin-right: 8rpx; }
+
+.input-field {
+  flex: 1; font-size: 32rpx; color: var(--text-primary);
+  height: 80rpx; line-height: 80rpx;
+}
+
+.input-desc {
+  font-size: 22rpx; color: var(--text-muted); margin-top: 6rpx; padding-left: 4rpx;
+}
+
+/* ===== 杂项 ===== */
+.tip { font-size: 22rpx; color: var(--text-light); text-align: center; margin: 20rpx 0; }
+
+.save-canvas {
+  position: fixed; left: -9999px; top: -9999px;
+}
+
+/* ===== 广告 ===== */
+.ad-banner-wrap {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--ad-bg);
+  box-shadow: 0 -2rpx 16rpx var(--ad-shadow);
+  padding: 8rpx 0; display: flex; justify-content: center; min-height: 96rpx;
+}
+
+.page-bottom-spacer { height: 120rpx; }

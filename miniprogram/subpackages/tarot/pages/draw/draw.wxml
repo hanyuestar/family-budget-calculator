@@ -1,0 +1,80 @@
+<!-- subpackages/tarot/pages/draw/draw.wxml - 抽牌 / 结果 -->
+<view class="container {{isDark ? 'is-dark' : ''}}">
+
+  <!-- 顶部标题 -->
+  <view class="draw-header">
+    <view class="draw-title">{{spreadName}}</view>
+    <view class="draw-sub" wx:if="{{!drawing && revealed}}">共 {{deck.length}} 张 · 仅供娱乐参考</view>
+  </view>
+
+  <!-- 洗牌中 -->
+  <view class="shuffle-box" wx:if="{{drawing}}">
+    <view class="shuffle-deck">
+      <view class="sh-card sc1"></view>
+      <view class="sh-card sc2"></view>
+      <view class="sh-card sc3"></view>
+      <view class="sh-card sc4"></view>
+      <view class="sh-card sc5"></view>
+    </view>
+    <view class="shuffle-text">正在洗牌…</view>
+  </view>
+
+  <!-- 结果区 -->
+  <view class="deck" wx:if="{{!drawing && revealed}}">
+    <view
+      class="card-item reveal"
+      wx:for="{{deck}}"
+      wx:key="idx"
+    >
+      <!-- 牌图 -->
+      <view class="card-img-wrap">
+        <image
+          class="card-img {{item.reversed ? 'reversed' : ''}}"
+          src="{{item.img}}"
+          mode="aspectFit"
+        />
+        <view class="card-pos">{{item.position}}</view>
+      </view>
+
+      <!-- 文案 -->
+      <view class="card-body">
+        <view class="card-name">
+          <text class="card-cn">{{item.cn}}</text>
+          <text class="card-ori {{item.reversed ? 'rev' : 'up'}}">{{item.orientation}}</text>
+        </view>
+        <view class="card-en">{{item.en}}</view>
+
+        <view class="kw-row">
+          <text class="kw" wx:for="{{item.kw}}" wx:for-item="k" wx:key="*this">{{k}}</text>
+        </view>
+
+        <view class="card-today" wx:if="{{deck.length === 1}}">💡 {{item.today}}</view>
+
+        <view class="card-text">{{item.text}}</view>
+      </view>
+    </view>
+
+    <!-- 合规声明 -->
+    <view class="disclaimer">以上为娱乐测试与心理投射，不构成任何建议或承诺</view>
+  </view>
+
+  <!-- 按钮区 -->
+  <view class="btn-row" wx:if="{{!drawing && revealed}}">
+    <button class="btn btn-home" bindtap="goHome">首页</button>
+    <button class="btn btn-save" bindtap="saveResult" disabled="{{isSaving}}">保存</button>
+    <button class="btn btn-share" open-type="share">分享</button>
+  </view>
+  <view class="btn-row" wx:if="{{!drawing && revealed}}">
+    <button class="btn btn-redraw" bindtap="redraw">再抽一次</button>
+  </view>
+
+  <view class="page-bottom-spacer"></view>
+
+  <!-- 隐藏 canvas（保存出图用，高度固定足够 4 张牌） -->
+  <canvas type="2d" id="saveCanvas" class="save-canvas" style="width:300px;height:1200px"></canvas>
+
+  <view class="ad-banner-wrap">
+    <ad unit-id="adunit-banner-tarot-001" ad-type="banner" ad-theme="white"></ad>
+  </view>
+
+</view>

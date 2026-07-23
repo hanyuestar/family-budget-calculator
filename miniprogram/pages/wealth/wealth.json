@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "calc-input": "/components/calc-input/calc-input"
+  },
+  "navigationBarTitleText": "财富层级测试"
+}

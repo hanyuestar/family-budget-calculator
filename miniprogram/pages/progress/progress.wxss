@@ -1,0 +1,17 @@
+/* pages/progress/progress.wxss - 时光进度条 */
+
+.container { min-height: 100vh; background-color: var(--bg-page); }
+
+.bar-row { margin-bottom: 28rpx; }
+.bar-label { font-size: 26rpx; color: var(--text-secondary); margin-bottom: 10rpx; }
+.bar-track { width: 100%; height: 20rpx; background: var(--bg-bar); border-radius: 10rpx; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 10rpx; transition: width 0.6s ease; }
+.bar-fill.year { background: linear-gradient(90deg, #667eea, #764ba2); }
+.bar-fill.month { background: linear-gradient(90deg, #11998e, #38ef7d); }
+.bar-fill.day { background: linear-gradient(90deg, #f093fb, #f5576c); }
+.bar-fill.life { background: linear-gradient(90deg, #fa709a, #fee140); }
+
+.picker-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); border-radius: 12rpx; padding: 0 24rpx; height: 80rpx; border: 2rpx solid var(--border); margin-bottom: 24rpx; }
+.picker-label { font-size: 30rpx; font-weight: 500; color: var(--text-primary); }
+.picker-value { font-size: 30rpx; color: #4A90D9; }
+.hint { font-size: 22rpx; color: var(--text-light); margin-top: 16rpx; padding-left: 4rpx; }

@@ -1,0 +1,93 @@
+<!-- pages/relation/relation.wxml - 亲戚关系计算器 -->
+<view class="container {{isDark ? 'is-dark' : ''}}" style="background-color: {{isDark ? '#1a1a2e' : '#f5f7fa'}}">
+
+  <!-- 按钮区卡片 -->
+  <view class="card picker-card">
+    <view class="card-title">👥 点选关系，一步一步拼</view>
+    <view class="rel-grid">
+      <view class="rel-card" data-rel="父" bindtap="addRel">
+        <text class="rel-char">父</text>
+        <text class="rel-label">爸爸</text>
+      </view>
+      <view class="rel-card" data-rel="母" bindtap="addRel">
+        <text class="rel-char">母</text>
+        <text class="rel-label">妈妈</text>
+      </view>
+      <view class="rel-card" data-rel="夫" bindtap="addRel">
+        <text class="rel-char">夫</text>
+        <text class="rel-label">老公</text>
+      </view>
+      <view class="rel-card" data-rel="妻" bindtap="addRel">
+        <text class="rel-char">妻</text>
+        <text class="rel-label">老婆</text>
+      </view>
+      <view class="rel-card" data-rel="子" bindtap="addRel">
+        <text class="rel-char">子</text>
+        <text class="rel-label">儿子</text>
+      </view>
+    </view>
+    <view class="rel-grid">
+      <view class="rel-card" data-rel="女" bindtap="addRel">
+        <text class="rel-char">女</text>
+        <text class="rel-label">女儿</text>
+      </view>
+      <view class="rel-card" data-rel="兄" bindtap="addRel">
+        <text class="rel-char">兄</text>
+        <text class="rel-label">哥哥</text>
+      </view>
+      <view class="rel-card" data-rel="弟" bindtap="addRel">
+        <text class="rel-char">弟</text>
+        <text class="rel-label">弟弟</text>
+      </view>
+      <view class="rel-card" data-rel="姐" bindtap="addRel">
+        <text class="rel-char">姐</text>
+        <text class="rel-label">姐姐</text>
+      </view>
+      <view class="rel-card" data-rel="妹" bindtap="addRel">
+        <text class="rel-char">妹</text>
+        <text class="rel-label">妹妹</text>
+      </view>
+    </view>
+    <view class="action-bar">
+      <button class="act-btn" bindtap="undo" disabled="{{chain.length === 0}}">退一步</button>
+      <button class="act-btn" bindtap="clear" disabled="{{chain.length === 0}}">清空</button>
+    </view>
+  </view>
+
+  <!-- 关系路径 -->
+  <view class="card path-card" wx:if="{{chain.length > 0 || result || needAge}}">
+    <view class="path-label">关系路径</view>
+    <view class="path-text">{{chainText}}</view>
+  </view>
+
+  <!-- 结果展示 -->
+  <view class="card result-card" wx:if="{{result || notSupported || needAge}}">
+    <view class="result-title" wx:if="{{result}}">你该叫 TA</view>
+    <view class="result-text" wx:if="{{result}}">{{result}}</view>
+    <view class="result-text grey" wx:if="{{notSupported && !notSupportedReason}}">暂不支持该层级查询</view>
+    <view class="result-text grey" wx:elif="{{notSupported && notSupportedReason}}">{{notSupportedReason}}</view>
+
+    <!-- 年龄选择 -->
+    <view class="age-pick" wx:if="{{needAge}}">
+      <button class="age-btn" data-which="older" bindtap="pickAge">TA 比我大（{{ageOptions.older}}）</button>
+      <button class="age-btn" data-which="younger" bindtap="pickAge">TA 比我小（{{ageOptions.younger}}）</button>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-bar">
+    <button class="btn btn-home" bindtap="goHome">首页</button>
+    <button class="btn btn-save" bindtap="saveResult" disabled="{{!result && !notSupported}}">保存</button>
+    <button class="btn btn-share" open-type="share" disabled="{{!result}}">分享</button>
+  </view>
+  <view class="tip">覆盖直系/父系/母系/堂表/侄甥/姻亲，超五级关系暂不支持</view>
+
+  <view class="page-bottom-spacer"></view>
+  <view class="ad-banner-wrap">
+    <ad unit-id="adunit-banner-relation-001" ad-type="banner" ad-theme="white"></ad>
+  </view>
+
+  <!-- 隐藏canvas（保存结果图片） -->
+  <canvas type="2d" id="saveCanvas" class="save-canvas" style="width:300px;height:610px"></canvas>
+
+</view>

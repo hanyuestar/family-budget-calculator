@@ -1,0 +1,55 @@
+<!-- pages/bmi/bmi.wxml - BMI 计算器 -->
+<view class="container {{isDark ? 'is-dark' : ''}}" style="background-color: {{isDark ? '#1a1a2e' : '#f5f7fa'}}">
+
+  <view class="card">
+    <view class="card-title">⚖️ 身高体重</view>
+
+    <calc-input label="身高（cm）" unit="cm" desc="厘米，如 170" field="height" value="{{height}}" bind:input="onInput" />
+
+    <calc-input label="体重（kg）" unit="kg" desc="公斤，如 65" field="weight" value="{{weight}}" bind:input="onInput" />
+
+    <view class="btn-row">
+      <button class="btn btn-secondary" bindtap="reset">重置</button>
+    </view>
+  </view>
+
+  <!-- 结果展示（实时） -->
+  <view class="result-area {{showResult ? 'show' : ''}}" wx:if="{{showResult}}">
+    <view class="result-gradient-card" style="background: linear-gradient(135deg, {{cat ? cat.color : '#11998e'}}15, #ffffff);">
+
+      <view class="rank-badge-wrap" wx:if="{{cat}}">
+        <view class="rank-badge" style="background: {{cat.color}}">
+          <text class="rank-name">{{cat.name}}</text>
+        </view>
+      </view>
+
+      <view class="big-rate-wrap">
+        <view class="big-rate-label">你的 BMI 指数</view>
+        <view class="big-rate-value" style="color: {{cat ? cat.color : '#333'}}">{{bmiStr}}</view>
+      </view>
+
+      <view class="divider-line"></view>
+
+      <view class="forecast-wrap">
+        <view class="forecast-label">🍎 健康体重区间</view>
+        <view class="forecast-sub">{{rangeStr}}</view>
+        <view class="forecast-compare" wx:if="{{cat}}">{{cat.comment}}</view>
+      </view>
+
+      <view class="disclaimer">⚠️ 结果不代表医学诊断</view>
+    </view>
+  </view>
+
+  <view class="btn-row">
+    <button class="btn btn-home" bindtap="goHome">首页</button>
+    <button class="btn btn-save" bindtap="saveResult" disabled="{{isSaving}}">保存</button>
+    <button class="btn btn-share" open-type="share" disabled="{{!showResult}}">分享</button>
+  </view>
+  <view class="tip">仅计算工具，数据不保存</view>
+
+  <view class="page-bottom-spacer"></view>
+  <canvas type="2d" id="saveCanvas" class="save-canvas" style="width:300px;height:610px"></canvas>
+  <view class="ad-banner-wrap">
+    <ad unit-id="adunit-banner-bmi-001" ad-type="banner" ad-theme="white"></ad>
+  </view>
+</view>

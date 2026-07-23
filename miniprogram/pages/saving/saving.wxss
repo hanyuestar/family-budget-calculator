@@ -1,0 +1,55 @@
+/* pages/saving/saving.wxss - 存钱段位样式 */
+
+.link-text { color: #4A90D9; font-weight: 600; text-decoration: underline; }
+.link-row { font-size: 24rpx; color: var(--text-muted); margin-top: 4rpx; padding-left: 4rpx; }
+
+/* 模式切换 */
+.mode-toggle {
+  display: flex;
+  background: var(--bg-card-alt);
+  border-radius: 32rpx;
+  padding: 4rpx;
+  margin-bottom: 20rpx;
+}
+
+.mode-btn {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx 0;
+  font-size: 26rpx;
+  border-radius: 28rpx;
+  color: var(--text-muted);
+}
+
+.mode-btn.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.08);
+}
+
+/* 段位徽章 */
+.rank-badge-wrap { display: flex; justify-content: center; margin-bottom: 24rpx; }
+.rank-badge { display: flex; align-items: center; justify-content: center; padding: 12rpx 40rpx; border-radius: 40rpx; gap: 8rpx; }
+.rank-emoji { font-size: 36rpx; }
+.rank-name { font-size: 34rpx; font-weight: 700; color: #ffffff; }
+
+.big-rate-wrap { text-align: center; padding: 20rpx 0; }
+.big-rate-label { font-size: 26rpx; color: var(--text-muted); margin-bottom: 8rpx; }
+.big-rate-value { font-size: 72rpx; font-weight: 800; line-height: 1.1; }
+.big-rate-sub { font-size: 28rpx; color: var(--text-secondary); margin-top: 8rpx; }
+
+.divider-line { width: 100%; height: 1rpx; background: linear-gradient(90deg, transparent, var(--divider), transparent); margin: 28rpx 0; }
+
+.wealth-age-wrap { text-align: center; padding: 16rpx 0; }
+.wealth-age-label { font-size: 26rpx; color: var(--text-muted); margin-bottom: 8rpx; }
+.wealth-age-value { font-size: 52rpx; font-weight: 800; color: #e74c3c; line-height: 1.2; }
+.wealth-age-unit { font-size: 28rpx; font-weight: 500; color: var(--text-muted); }
+.wealth-age-tip { font-size: 26rpx; color: var(--text-secondary); margin-top: 8rpx; }
+
+.forecast-wrap { background: var(--bg-card-alt); border-radius: 16rpx; padding: 24rpx; margin-top: 24rpx; text-align: center; }
+.forecast-label { font-size: 26rpx; color: var(--text-muted); margin-bottom: 8rpx; }
+.forecast-sub { font-size: 28rpx; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12rpx; }
+.forecast-num { color: #e67e22; font-weight: 700; font-size: 32rpx; }
+.forecast-compare { font-size: 26rpx; color: var(--text-secondary); line-height: 1.5; padding-top: 8rpx; border-top: 1rpx dashed var(--divider-dashed); }
+.compare-icon { font-size: 28rpx; }
