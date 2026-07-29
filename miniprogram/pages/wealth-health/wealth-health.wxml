@@ -1,0 +1,163 @@
+<!-- pages/wealth-health/wealth-health.wxml - 财富健康指数 -->
+<view class="container {{isDark ? 'is-dark' : ''}}" style="background-color: {{isDark ? '#1a1a2e' : '#f5f7fa'}}">
+
+  <!-- 基础信息 -->
+  <view class="card">
+    <view class="card-title">📋 基本信息</view>
+
+    <view class="row-line">
+      <text class="row-label">出生年份</text>
+      <picker mode="selector" range="{{birthYearOptions}}" value="{{birthYearIndex}}" bindchange="onBirthYearChange">
+        <view class="picker-value">{{birthYear || '请选择'}} ▾</view>
+      </picker>
+    </view>
+    <calc-input label="税前年收入" unit="万元" desc="全年税前总收入（含五险一金前）" field="annualPreTaxWan" value="{{annualPreTaxWan}}" bind:input="onInput" type="digit" />
+    <view class="row-line">
+      <text class="row-label">工作起始年份</text>
+      <picker mode="selector" range="{{workStartYearOptions}}" value="{{workStartYearIndex}}" bindchange="onWorkStartYearChange">
+        <view class="picker-value">{{workStartYear || '请选择'}} ▾</view>
+      </picker>
+    </view>
+
+    <view class="row-line">
+      <text class="row-label">所在城市</text>
+      <picker mode="selector" range="{{cityNames}}" value="{{cityIndex}}" bindchange="onCityChange">
+        <view class="picker-value">{{cityNames[cityIndex]}} ▾</view>
+      </picker>
+    </view>
+
+    <view class="rate-summary" wx:if="{{cityRateText}}">{{cityRateText}}</view>
+
+    <view class="row-line" wx:if="{{hasMedicalTiers}}">
+      <text class="row-label">医保档位</text>
+      <picker mode="selector" range="{{medicalTiers}}" value="{{medicalTiers.indexOf(medicalTier)}}" bindchange="onMedicalChange">
+        <view class="picker-value">{{medicalTier}} ▾</view>
+      </picker>
+    </view>
+
+    <view class="row-line col">
+      <view class="row-top">
+        <text class="row-label">公积金缴存比例</text>
+        <text class="row-val">{{fundRatePct}}%</text>
+      </view>
+      <slider min="{{fundMinPct}}" max="{{fundMaxPct}}" step="1" value="{{fundRatePct}}" bindchanging="onFundRate" bindchange="onFundRate" activeColor="#1abc9c" block-size="20" />
+    </view>
+
+    <view class="row-line">
+      <text class="row-label">计入公积金余额</text>
+      <switch checked="{{includeFund}}" bindchange="onIncludeFund" color="#1abc9c" />
+    </view>
+    <calc-input wx:if="{{includeFund}}" label="公积金余额（手动填）" unit="万元" desc="留空则按缴存估算；填了以填写为准" field="fundOverride" value="{{fundOverride}}" bind:input="onInput" type="digit" />
+  </view>
+
+  <!-- 专项附加扣除 -->
+  <view class="card">
+    <view class="card-title">🧾 专项附加扣除<text class="card-sub">（选填，影响税后口径）</text></view>
+
+    <view class="deduct-item" wx:for="{{deductItems}}" wx:key="id">
+      <view class="deduct-text">
+        <view class="deduct-name">{{item.name}}</view>
+        <view class="deduct-note">{{item.note}}</view>
+      </view>
+      <!-- 数量型（每孩） -->
+      <view wx:if="{{item.type === 'perChild'}}" class="stepper">
+        <view class="step-btn" data-key="{{item.id}}" bindtap="onStep" data-delta="-1">−</view>
+        <text class="step-val">{{item.id === 'infant' ? infant : childEdu}}</text>
+        <view class="step-btn" data-key="{{item.id}}" bindtap="onStep" data-delta="1">＋</view>
+      </view>
+      <!-- 金额型（自付 / 分摊） -->
+      <input wx:elif="{{item.type === 'amount'}}" class="deduct-input" type="digit" placeholder="金额" value="{{item.id === 'seriousSelfPay' ? seriousSelfPay : elderlyShare}}" data-key="{{item.id}}" bindinput="onDeductInput" />
+      <!-- 布尔型（开关） -->
+      <switch wx:else checked="{{item.id === 'eduDegree' ? eduDegree : item.id === 'eduCert' ? eduCert : item.id === 'mortgage' ? mortgage : item.id === 'rent' ? rent : item.id === 'elderlyOnly' ? elderlyOnly : pension}}" data-key="{{item.id}}" bindchange="onDeductToggle" color="#1abc9c" />
+    </view>
+  </view>
+
+  <!-- 资产 -->
+  <view class="card">
+    <view class="card-title">🏠 家庭资产（万元）</view>
+    <calc-input label="房产总市值" unit="万元" desc="自住+投资性房产当前市场总价" field="houseValue" value="{{houseValue}}" bind:input="onInput" type="digit" />
+    <calc-input label="房贷剩余本金" unit="万元" desc="所有房产未还清贷款总额" field="houseLoan" value="{{houseLoan}}" bind:input="onInput" type="digit" />
+    <calc-input label="现金及存款" unit="万元" desc="活期、定期、货币基金等" field="cash" value="{{cash}}" bind:input="onInput" type="digit" />
+    <calc-input label="投资资产" unit="万元" desc="股票、基金、理财、债券等" field="invest" value="{{invest}}" bind:input="onInput" type="digit" />
+    <calc-input label="其他可变现资产" unit="万元" desc="车辆、黄金、股权等" field="other" value="{{other}}" bind:input="onInput" type="digit" />
+  </view>
+
+  <!-- 结果展示区 -->
+  <view class="result-area {{showResult ? 'show' : ''}}" wx:if="{{showResult && result}}">
+    <view class="result-gradient-card" style="background: linear-gradient(135deg, #16a085, #1abc9c)">
+      <view class="net-asset-label">你的财富健康倍数</view>
+      <view class="net-asset-value">{{multipleText}} 倍</view>
+
+      <view class="level-badge" wx:if="{{rank}}" style="background: rgba(255,255,255,0.22)">
+        <text class="level-name">{{rank.label}}</text>
+      </view>
+      <view class="level-desc" wx:if="{{rank}}">{{rank.text}}</view>
+
+      <!-- 评级星级 -->
+      <view class="stars" wx:if="{{rank}}">
+        <text wx:for="{{[0,1,2]}}" wx:key="*this" class="star {{index < rank.stars ? 'on' : ''}}">★</text>
+      </view>
+    </view>
+
+    <!-- 进度条：0 ~ 2 倍（PAW） -->
+    <view class="card progress-card">
+      <view class="progress-track">
+        <view class="progress-fill" style="width: {{progress * 100}}%"></view>
+        <view class="progress-marker" style="left: 25%"><text>0.5</text></view>
+        <view class="progress-marker" style="left: 50%"><text>1.0</text></view>
+        <view class="progress-marker" style="left: 100%"><text>2.0</text></view>
+      </view>
+      <view class="progress-caption">倍数 = 实际净资产 ÷ 预期净资产（年龄×年收入÷10）</view>
+    </view>
+
+    <!-- 口径切换 -->
+    <view class="card">
+      <view class="seg">
+        <view class="seg-item {{taxMode === 'preTax' ? 'active' : ''}}" data-mode="preTax" bindtap="onTaxMode">税前口径</view>
+        <view class="seg-item {{taxMode === 'afterTax' ? 'active' : ''}}" data-mode="afterTax" bindtap="onTaxMode">税后口径</view>
+      </view>
+      <view class="seg" style="margin-top:16rpx">
+        <view class="seg-item {{fundMode === 'inc' ? 'active' : ''}}" data-mode="inc" bindtap="onFundMode">含公积金</view>
+        <view class="seg-item {{fundMode === 'exc' ? 'active' : ''}}" data-mode="exc" bindtap="onFundMode">不含公积金</view>
+      </view>
+    </view>
+
+    <!-- 数据卡片 -->
+    <view class="card">
+      <view class="card-title">📊 测算明细（{{taxMode === 'preTax' ? '税前' : '税后'}}·{{fundMode === 'inc' ? '含公积金' : '不含公积金'}}）</view>
+      <view class="data-row"><text>预期净资产基准线</text><text class="data-val">{{baselineWan}} 万</text></view>
+      <view class="data-row"><text>实际净资产</text><text class="data-val">{{netAssetWan}} 万</text></view>
+      <view class="data-row"><text>PAW 目标线（×2）</text><text class="data-val">{{paw.targetWan}} 万</text></view>
+      <view class="data-row" wx:if="{{!paw.reached}}"><text class="gap">距 PAW 目标还差</text><text class="data-val gap">{{paw.gapWan}} 万</text></view>
+      <view class="data-row" wx:else><text class="ok">已达成 PAW，超出</text><text class="data-val ok">{{paw.exceedWan}} 万</text></view>
+
+      <view class="mini-grid">
+        <view class="mini-cell"><view class="mini-label">税前年收入</view><view class="mini-val">{{result.annualPreTax}} 元</view></view>
+        <view class="mini-cell"><view class="mini-label">五险一金(年)</view><view class="mini-val">{{result.annualFiveOne}} 元</view></view>
+        <view class="mini-cell"><view class="mini-label">个税(年)</view><view class="mini-val">{{result.annualTax}} 元</view></view>
+        <view class="mini-cell"><view class="mini-label">税后年收入</view><view class="mini-val">{{result.annualNetSalary}} 元</view></view>
+      </view>
+      <view class="disclaimer">⚠️ 本测算为娱乐向，基于《The Millionaire Next Door》财富公式，不代表真实财务状况</view>
+    </view>
+  </view>
+
+  <!-- 底部按钮区 -->
+  <view class="bottom-btn">
+    <button class="btn btn-secondary" bindtap="reset">重置</button>
+  </view>
+
+  <view class="btn-row">
+    <button class="btn btn-home" bindtap="goHome">首页</button>
+    <button class="btn btn-save" bindtap="saveResult" disabled="{{isSaving}}">保存</button>
+    <button class="btn btn-share" open-type="share" disabled="{{!showResult}}">分享</button>
+  </view>
+  <view class="tip">社保/公积金参数按 2026 公开口径（已接入 7 城），实际以当地公布为准</view>
+
+  <view class="page-bottom-spacer"></view>
+
+  <canvas type="2d" id="saveCanvas" class="save-canvas" style="width:300px;height:610px"></canvas>
+
+  <view class="ad-banner-wrap">
+    <ad unit-id="adunit-banner-wealthhealth-001" ad-type="banner" ad-theme="white"></ad>
+  </view>
+</view>

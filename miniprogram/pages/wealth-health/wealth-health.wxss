@@ -1,0 +1,79 @@
+/* pages/wealth-health/wealth-health.wxss */
+
+.container { padding-bottom: 40rpx; }
+
+/* 结果区淡入动画 */
+.result-area { opacity: 0; transform: translateY(30rpx); }
+.result-area.show { animation: fadeInResult 0.5s ease forwards; }
+@keyframes fadeInResult {
+  from { opacity: 0; transform: translateY(30rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 通用行（picker / switch） */
+.row-line { display: flex; align-items: center; justify-content: space-between; padding: 20rpx 0; border-bottom: 1rpx solid var(--border-subtle); }
+.row-line.col { flex-direction: column; align-items: stretch; }
+.row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8rpx; }
+.row-label { font-size: 28rpx; color: var(--text-primary); }
+.row-val { font-size: 30rpx; font-weight: 600; color: #1abc9c; }
+.picker-value { font-size: 28rpx; color: var(--text-secondary); padding: 8rpx 20rpx; background: var(--bg-card-alt); border-radius: 12rpx; }
+
+/* 城市费率摘要（随城市变化） */
+.rate-summary { font-size: 22rpx; color: var(--text-muted); line-height: 1.6; padding: 16rpx 20rpx; margin: 4rpx 0 8rpx; background: rgba(26, 160, 133, 0.08); border-radius: 12rpx; }
+
+/* 结果卡片 */
+.result-gradient-card {
+  border-radius: 20rpx; padding: 48rpx 32rpx; margin: 24rpx;
+  box-shadow: var(--card-shadow); text-align: center; color: #fff;
+}
+.net-asset-label { font-size: 28rpx; opacity: 0.9; margin-bottom: 12rpx; }
+.net-asset-value { font-size: 60rpx; font-weight: 700; margin-bottom: 28rpx; }
+.level-badge { display: inline-flex; align-items: center; padding: 14rpx 40rpx; border-radius: 40rpx; margin-bottom: 20rpx; }
+.level-name { font-size: 30rpx; font-weight: 600; color: #fff; }
+.level-desc { font-size: 24rpx; opacity: 0.92; line-height: 1.6; margin-bottom: 20rpx; padding: 0 20rpx; }
+
+/* 星级 */
+.stars { display: flex; justify-content: center; gap: 12rpx; }
+.star { font-size: 36rpx; color: rgba(255,255,255,0.35); }
+.star.on { color: #fff; text-shadow: 0 0 8rpx rgba(255,255,255,0.6); }
+
+/* 进度条 */
+.progress-card { padding: 32rpx 28rpx; }
+.progress-track { position: relative; height: 20rpx; background: var(--bg-card-alt); border-radius: 10rpx; margin: 40rpx 10rpx 56rpx; overflow: visible; }
+.progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(90deg, #16a085, #1abc9c); border-radius: 10rpx; transition: width 0.4s ease; }
+.progress-marker { position: absolute; top: 24rpx; transform: translateX(-50%); font-size: 20rpx; color: var(--text-muted); }
+.progress-marker text { position: relative; }
+.progress-caption { font-size: 22rpx; color: var(--text-muted); text-align: center; line-height: 1.5; }
+
+/* 分段切换 */
+.seg { display: flex; background: var(--bg-card-alt); border-radius: 14rpx; padding: 6rpx; }
+.seg-item { flex: 1; text-align: center; font-size: 26rpx; color: var(--text-secondary); padding: 16rpx 0; border-radius: 10rpx; }
+.seg-item.active { background: #1abc9c; color: #fff; font-weight: 600; }
+
+/* 数据行 */
+.data-row { display: flex; justify-content: space-between; align-items: center; padding: 18rpx 0; border-bottom: 1rpx solid var(--border-subtle); font-size: 28rpx; color: var(--text-secondary); }
+.data-val { font-size: 30rpx; font-weight: 600; color: var(--text-primary); }
+.data-row .gap { color: #e67e22; }
+.data-row .ok { color: #27ae60; }
+
+/* 迷你四宫格 */
+.mini-grid { display: flex; flex-wrap: wrap; margin-top: 20rpx; }
+.mini-cell { width: 50%; box-sizing: border-box; padding: 16rpx 0; }
+.mini-label { font-size: 22rpx; color: var(--text-muted); margin-bottom: 6rpx; }
+.mini-val { font-size: 26rpx; font-weight: 600; color: var(--text-primary); }
+
+/* 专项附加 */
+.deduct-item { display: flex; align-items: center; justify-content: space-between; padding: 20rpx 0; border-bottom: 1rpx solid var(--border-subtle); }
+.deduct-text { flex: 1; padding-right: 16rpx; }
+.deduct-name { font-size: 28rpx; color: var(--text-primary); }
+.deduct-note { font-size: 22rpx; color: var(--text-muted); margin-top: 4rpx; }
+.stepper { display: flex; align-items: center; }
+.step-btn { width: 56rpx; height: 56rpx; line-height: 52rpx; text-align: center; border-radius: 50%; background: var(--bg-card-alt); color: #1abc9c; font-size: 36rpx; font-weight: 600; }
+.step-val { min-width: 48rpx; text-align: center; font-size: 30rpx; font-weight: 600; color: var(--text-primary); }
+.deduct-input { width: 140rpx; text-align: right; font-size: 26rpx; color: var(--text-primary); border: 1rpx solid var(--border); border-radius: 10rpx; padding: 10rpx 16rpx; }
+
+.card-sub { font-size: 22rpx; color: var(--text-muted); font-weight: 400; margin-left: 8rpx; }
+.bottom-btn { padding: 40rpx 24rpx 0; }
+.bottom-btn .btn { margin-bottom: 16rpx; }
+.disclaimer { font-size: 22rpx; color: var(--text-light); text-align: center; margin-top: 24rpx; padding: 0 20rpx; }
+.tip { font-size: 22rpx; color: var(--text-muted); text-align: center; padding: 16rpx 24rpx; }

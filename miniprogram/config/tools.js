@@ -25,11 +25,12 @@ module.exports = {
       hot: true
     },
     {
-      id: 'saving',
-      icon: '🐷',
-      name: '存钱段位',
-      desc: '算算你能存下多少钱，看看存钱习惯像几岁',
-      path: '/pages/saving/saving'
+      id: 'wealth-health',
+      icon: '📈',
+      name: '财富健康指数',
+      desc: '用财富公式测算你的净资产积累效率',
+      path: '/pages/wealth-health/wealth-health',
+      hot: true
     },
     {
       id: 'relation',

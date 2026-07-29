@@ -460,7 +460,7 @@ function loadOtherPage(relPath) {
 var OTHER_PAGES = [
   { path: 'pages/bmi/bmi.js',          prep: function (i) { i.setData({ height: '170', weight: '65' }); i.calculate() } },
   { path: 'pages/wealth/wealth.js',     prep: function (i) { i.setData({ showResult: true }) } },
-  { path: 'pages/saving/saving.js',     prep: function (i) { i.setData({ showResult: true }) } },
+  { path: 'pages/wealth-health/wealth-health.js', prep: function (i) { i.setData({ birthYear: '1990', annualPreTaxWan: '30', workStartYear: '2012', houseValue: '300', cash: '50' }); i.calculate() } },
   { path: 'pages/progress/progress.js', prep: function (i) {} },
   { path: 'pages/index/index.js',       prep: function (i) { i.setData({ annualTotal: 1, monthlyTotalStr: '0', annualTotalStr: '0', insuranceRatioStr: '0' }) } },
   { path: 'pages/relation/relation.js', prep: function (i) { i.setData({ result: '表哥', notSupported: false, chain: ['我', '父', '兄'], chainText: '我父兄' }) } }

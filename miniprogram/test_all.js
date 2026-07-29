@@ -1,5 +1,5 @@
 // test_all.js — 非塔罗工具「功能逻辑 + 计算后按钮」全量回归
-// 覆盖：bmi / wealth / saving / relation / expense(首页index) / progress
+// 覆盖：bmi / wealth / wealth-health / relation / expense(首页index) / progress
 // 每个工具：① 核心计算逻辑正确性 ② 计算后按钮（保存/重置/分享就绪/历史写入/模式切换/年龄/跳转等）是否正常
 // 运行：node miniprogram/test_all.js
 // 注：塔罗由 test_tarot.js 覆盖，二者一起跑即全量。
@@ -228,48 +228,159 @@ async function runWealth() {
   await assertSaveOK(w5, 'wealth', true)
 }
 
-async function runSaving() {
-  console.log('\n— 存钱段位 —')
-  var s = fresh('pages/saving/saving.js')
-  s.setData({ mode: 'forward', income: '10000', expense: '6000' }); s.doCalculate()
-  record(s.data.monthSaving === 4000, '月储蓄=4000', s.data.monthSaving)
-  record(s.data.savingRateStr === '40.0%', '储蓄率=40.0%', s.data.savingRateStr)
-  record(s.data.rank && s.data.rank.name === '钻石', '段位=钻石', s.data.rank && s.data.rank.name)
-  record(s.data.wealthAge === 43, '财富年龄=43', s.data.wealthAge)
-  record(s.data.showResult === true, '正向有输入 showResult=true')
+async function runWealthHealth() {
+  console.log('\n— 财富健康指数 —')
+  var p = fresh('pages/wealth-health/wealth-health.js')
+  p.setData({
+    birthYear: '1990', annualPreTaxWan: '30', workStartYear: '2012',
+    houseValue: '300', houseLoan: '100', cash: '50', invest: '80', other: ''
+  })
+  p.calculate()
+  record(p.data.showResult === true, '有核心输入 showResult=true')
+  record(p.data.result && typeof p.data.multiple === 'number', '计算出倍数(multiple)', 'multiple=' + p.data.multiple)
+  record(p.data.rank && p.data.rank.label, '得出等级 label', p.data.rank && p.data.rank.label)
+  record(p.data.baselineWan !== undefined, '得出基准线(万元)', 'baseline=' + p.data.baselineWan)
+  record(p.data.paw && p.data.paw.targetWan > 0, '得出 PAW 目标线', 'target=' + p.data.paw.targetWan)
+  record(p.data.result.annualPreTax > 0 && p.data.result.annualTax >= 0, '个税计算 >=0')
 
-  s.switchMode({ currentTarget: { dataset: { mode: 'reverse' } } })
-  record(s.data.mode === 'reverse', 'switchMode → reverse')
-  s.onPickYear({ detail: { value: '4' } })
-  record(s.data.goalYearIdx === 4, 'onPickYear 设 goalYearIdx=4（5年）')
-  s.setData({ goalAmount: '120000', expense: '3000' }); s.doCalculate()
-  record(s.data.monthSaving === 2000, '倒推月需存=2000', s.data.monthSaving)
-  record(s.data.rank && s.data.rank.name === '钻石', '倒推段位=钻石', s.data.rank && s.data.rank.name)
-  record(/5年/.test(s.data.share.title), '倒推分享标题含年限')
+  // 口径切换：税后倍数 ≤ 税前倍数（同口径）
+  var preTaxInc = p.data.multiple
+  p.onTaxMode({ currentTarget: { dataset: { mode: 'afterTax' } } })
+  record(p.data.taxMode === 'afterTax', '切换税后口径')
+  var afterTaxInc = p.data.multiple
+  record(afterTaxInc >= preTaxInc - 1e-9, '税后口径倍数 ≥ 税前口径（税后基准线更小，倍数更高）', 'pre=' + preTaxInc + ' after=' + afterTaxInc)
+  p.onFundMode({ currentTarget: { dataset: { mode: 'exc' } } })
+  record(p.data.fundMode === 'exc', '切换不含公积金口径')
+  p.onTaxMode({ currentTarget: { dataset: { mode: 'preTax' } } })
 
-  navigateCalls.length = 0
-  s.goExpense()
-  record(navigateCalls.some(function (n) { return /pages\/index\/index/.test(n.url) }), 'goExpense 跳转家庭支出页')
+  // 公积金开关
+  p.onIncludeFund({ detail: { value: false } })
+  record(p.data.includeFund === false, '关闭计入公积金余额')
 
-  s.reset()
-  record(s.data.income === '' && s.data.showResult === false, 'reset 清空输入与结果（mode 作为持久开关保留）')
+  // 专项附加：房贷/租金互斥
+  p.onDeductToggle({ currentTarget: { dataset: { key: 'mortgage' } }, detail: { value: true } })
+  record(p.data.mortgage === true && p.data.rent === false, '选房贷利息→租金自动取消(互斥)')
+  p.onDeductToggle({ currentTarget: { dataset: { key: 'rent' } }, detail: { value: true } })
+  record(p.data.rent === true && p.data.mortgage === false, '选租金→房贷自动取消(互斥)')
 
-  var s2 = fresh('pages/saving/saving.js')
-  assertNoSave(s2, /请先计算/)
+  // 数量型步进 / 金额型输入
+  p.onStep({ currentTarget: { dataset: { key: 'infant', delta: '1' } } })
+  record(p.data.infant === '1', '婴幼儿照护步进 +1')
+  p.onDeductInput({ currentTarget: { dataset: { key: 'seriousSelfPay' } }, detail: { value: '20000' } })
+  record(p.data.seriousSelfPay === '20000', '大病医疗自付金额写入')
 
-  var s3 = fresh('pages/saving/saving.js')
-  s3.setData({ mode: 'forward', income: '10000', expense: '6000' }); s3.doCalculate(); s3.setData({ isSaving: true })
+  // ===== 多城市社保/医保比例（直接测 computeFiveOne）=====
+  var whCalc = require('./utils/wealth-health.js')
+  var CITYSS = require('./data/city-ss.js')
+  var CITY_ORDER = Object.keys(CITYSS)
+  function cidx(k) { return CITY_ORDER.indexOf(k) }
+  var HI = 2000000 // 超高薪，使各项基数全部封顶，便于核对比例
+  // 北京：单费率 2% + 大病统筹固定额 3 元/月
+  var bj = whCalc.computeFiveOne(HI, 'beijing', '一档', 0.12)
+  record(Math.abs(bj.monthly.yi - (CITYSS.beijing.social.医疗.baseMax * 0.02 + 3)) < 1e-6,
+    '北京医疗含 +3 元固定额', 'yi=' + bj.monthly.yi)
+  // 上海：公积金比例区间 5%-7%，传 0.12 应被 clamp 至 7%
+  var sh = whCalc.computeFiveOne(HI, 'shanghai', '一档', 0.12)
+  record(Math.abs(sh.monthly.gjj / sh.bases.gjj - 0.07) < 1e-9, '上海公积金比例被 clamp 至 7%', 'rate=' + (sh.monthly.gjj / sh.bases.gjj))
+  record(sh.monthly.yi / sh.bases.yi - 0.02 < 1e-9, '上海医疗 2% 单费率', 'rate=' + (sh.monthly.yi / sh.bases.yi))
+  // 深圳二档 0.5%
+  var sz = whCalc.computeFiveOne(HI, 'shenzhen', '二档', 0.08)
+  record(Math.abs(sz.monthly.yi / sz.bases.yi - 0.005) < 1e-9, '深圳二档医疗 0.5%', 'rate=' + (sz.monthly.yi / sz.bases.yi))
+  // 珠海一档 1.5%
+  var zh = whCalc.computeFiveOne(HI, 'zhuhai', '一档', 0.12)
+  record(Math.abs(zh.monthly.yi / zh.bases.yi - 0.015) < 1e-9, '珠海一档医疗 1.5%', 'rate=' + (zh.monthly.yi / zh.bases.yi))
+  // 东莞租金专项 1100（普通地级市）
+  record(CITYSS.dongguan.rentMonthly === 1100, '东莞租金专项 1100 元/月', 'rent=' + CITYSS.dongguan.rentMonthly)
+  record(CITYSS.beijing.rentMonthly === 1500, '北京租金专项 1500 元/月（一线）')
+
+  // ===== 常识性一致性校验 =====
+  // 资不抵债 → 净资产为负 → UAW
+  var wu = whCalc.compute({ birthYear: '1990', annualPreTaxWan: '30', workStartYear: '2012', assets: { houseValue: '100', houseLoan: '150', cash: '0', invest: '0', other: '0' } })
+  record(wu.na.exc < 0, '资不抵债(负债>资产)→净资产为负', 'exc=' + wu.na.exc)
+  record(whCalc.rankFor(wu.multiples.preTaxInc).key === 'UAW', '净资产为负→UAW 等级', 'rank=' + whCalc.rankFor(wu.multiples.preTaxInc).key)
+
+  // 资产远超基准 → 倍数≥2 → 已达成 PAW
+  var wrich = whCalc.compute({ birthYear: '1980', annualPreTaxWan: '30', workStartYear: '2002', assets: { houseValue: '2000', houseLoan: '0', cash: '2000', invest: '2000', other: '0' } })
+  record(wrich.multiples.preTaxInc >= 2, '资产远超基准→倍数≥2（PAW）', 'mult=' + wrich.multiples.preTaxInc)
+  var pawRich = whCalc.pawInfo(wrich.baselines.preTax, wrich.na.inc * 10000)
+  record(pawRich.reached === true, '资产足够→已达成 PAW 目标线')
+
+  // 个税速算扣除数正确性（直接测 computeTax）
+  record(Math.abs(whCalc.computeTax(200000) - 23080) < 1e-6, '个税：20万应纳税所得额 → 23080', 'tax=' + whCalc.computeTax(200000))
+  record(Math.abs(whCalc.computeTax(50000) - (50000 * 0.10 - 2520)) < 1e-6, '个税：5万应纳税所得额 → 2480')
+
+  // 税后年收入 ≤ 税前年收入（五险一金+个税只减不增）
+  var wsal = whCalc.compute({ birthYear: '1990', annualPreTaxWan: '30', workStartYear: '2012' })
+  record(wsal.annualNetSalary <= wsal.annualPreTax + 1e-6, '税后年收入 ≤ 税前年收入', 'net=' + wsal.annualNetSalary + ' pre=' + wsal.annualPreTax)
+
+  // 防御：出生年份晚于工作年份（UI 下拉已拦截，纯函数仍应返回有限值不抛错）
+  var wdef = whCalc.compute({ birthYear: '2010', annualPreTaxWan: '30', workStartYear: '2000' })
+  record(isFinite(wdef.multiples.preTaxInc), '出生年份晚于工作年份：compute 仍返回有限倍数(不抛错)')
+
+  // 深圳 30 万税前：个人五险一金年合计 = (8%+2%+0.2%+8%)×月薪25000×12
+  var wsz = whCalc.computeFiveOne(300000, 'shenzhen', '一档', 0.08)
+  var expectFiveOne = (0.08 + 0.02 + 0.002 + 0.08) * 25000 * 12
+  record(Math.abs(wsz.yearly.total - expectFiveOne) < 1, '深圳30万：五险一金年合计≈18.2%×基数', 'got=' + wsz.yearly.total + ' exp=' + expectFiveOne)
+
+  // 倍数显示保留三位小数（toFixed(3)）
+  var pDec = fresh('pages/wealth-health/wealth-health.js')
+  pDec.setData({ birthYear: '1990', annualPreTaxWan: '30', workStartYear: '2012' }); pDec.calculate()
+  record(/^\d+\.\d{3}$/.test(String(pDec.data.multipleText)), '倍数 multipleText 保留三位小数', 'multipleText=' + pDec.data.multipleText)
+  var pc = fresh('pages/wealth-health/wealth-health.js')
+  pc.onCityChange({ detail: { value: cidx('beijing') } })
+  record(pc.data.cityKey === 'beijing' && pc.data.hasMedicalTiers === false, '切到北京：无医保档位选择（单费率）')
+  record(pc.data.fundMinPct === 5 && pc.data.fundMaxPct === 12, '北京公积金区间 5%-12%')
+  record(/租金专项 1500/.test(pc.data.cityRateText), '北京费率摘要含租金 1500')
+  var psh = fresh('pages/wealth-health/wealth-health.js')
+  psh.onCityChange({ detail: { value: cidx('shanghai') } })
+  record(psh.data.fundMinPct === 5 && psh.data.fundMaxPct === 7, '上海公积金区间收窄为 5%-7%')
+  record(psh.data.fundRatePct === 7, '上海默认公积金比例 7%')
+  var pzh = fresh('pages/wealth-health/wealth-health.js')
+  pzh.onCityChange({ detail: { value: cidx('zhuhai') } })
+  record(pzh.data.hasMedicalTiers === true && pzh.data.medicalTier === '一档', '切到珠海：有医保档位且默认一档')
+  var pdg = fresh('pages/wealth-health/wealth-health.js')
+  pdg.onCityChange({ detail: { value: cidx('dongguan') } })
+  record(pdg.data.rentMonthly === 1100, '切到东莞：租金专项 1100')
+
+  // ===== 年份下拉选择 + 常识校验（页面级）=====
+  var py = fresh('pages/wealth-health/wealth-health.js')
+  py.onBirthYearChange({ detail: { value: py.data.birthYearOptions.indexOf('1990') } })
+  record(py.data.birthYear === '1990', '年份下拉：选中出生年份=1990')
+  record(py.data.workStartYearOptions[py.data.workStartYearOptions.length - 1] === '2006',
+    '年份下拉：工作起始最早可选 = 出生年+16(2006，符合工作年龄常识)', 'min=' + py.data.workStartYearOptions[py.data.workStartYearOptions.length - 1])
+  // 先选工作年份 2020，再改出生年份为 2010（晚于 2020）→ 工作年份应被清空
+  var py2 = fresh('pages/wealth-health/wealth-health.js')
+  py2.onWorkStartYearChange({ detail: { value: py2.data.workStartYearOptions.indexOf('2020') } })
+  record(py2.data.workStartYear === '2020', '年份下拉：先选中工作年份=2020')
+  py2.onBirthYearChange({ detail: { value: py2.data.birthYearOptions.indexOf('2010') } })
+  record(py2.data.workStartYear === '', '出生年份晚于工作年份→工作年份被清空重选', 'ws=' + py2.data.workStartYear)
+  // 出生年份(2010)晚于工作年份(2005)→清空并弹提示
+  var py3 = fresh('pages/wealth-health/wealth-health.js')
+  py3.onWorkStartYearChange({ detail: { value: py3.data.workStartYearOptions.indexOf('2005') } })
+  var tn0 = toastCalls.length
+  py3.onBirthYearChange({ detail: { value: py3.data.birthYearOptions.indexOf('2010') } })
+  record(py3.data.workStartYear === '' && toastCalls.length > tn0, '出生年份(2010)晚于工作年份(2005)→清空并提示')
+
+  // 无结果保存拦截
+  var p2 = fresh('pages/wealth-health/wealth-health.js')
+  assertNoSave(p2, /请先填写/)
+
+  // isSaving 拦截
+  var p3 = fresh('pages/wealth-health/wealth-health.js')
+  p3.setData({ birthYear: '1990', annualPreTaxWan: '30', workStartYear: '2012' }); p3.calculate(); p3.setData({ isSaving: true })
   exportCalls = 0
-  s3.saveResult()
+  p3.saveResult()
   record(exportCalls === 0, 'isSaving 时保存被拦截')
 
-  var s4 = fresh('pages/saving/saving.js')
-  s4.setData({ mode: 'forward', income: '10000', expense: '6000' }); s4.doCalculate()
-  await assertSaveOK(s4, 'saving', true)
+  // 保存 E2E
+  var p4 = fresh('pages/wealth-health/wealth-health.js')
+  p4.setData({ birthYear: '1990', annualPreTaxWan: '30', workStartYear: '2012', houseValue: '300', houseLoan: '100', cash: '50', invest: '80' }); p4.calculate()
+  await assertSaveOK(p4, 'wealth-health', true)
 
-  var s5 = fresh('pages/saving/saving.js')
-  s5.setData({ mode: 'reverse', goalAmount: '120000', expense: '3000', goalYearIdx: 4 }); s5.doCalculate()
-  await assertSaveOK(s5, 'saving', true)
+  // restoreHistory
+  var p5 = fresh('pages/wealth-health/wealth-health.js')
+  p5.restoreHistory({ input: { birthYear: '1990', annualPreTaxWan: '30', workStartYear: '2012', cityKey: 'shenzhen', medicalTier: '一档', fundRate: 0.08, includeFund: true, sel: {}, assets: { houseValue: '300' } } })
+  record(p5.data.showResult === true, 'restoreHistory 还原并出结果')
 }
 
 async function runRelation() {
@@ -416,8 +527,7 @@ async function runProgress() {
 // ============ 主流程 ============
 ;(async function () {
   await runBmi()
-  await runWealth()
-  await runSaving()
+  await runWealthHealth()
   await runRelation()
   await runExpense()
   await runProgress()

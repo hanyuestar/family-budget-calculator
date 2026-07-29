@@ -168,11 +168,26 @@ function drawBrandStrip(ctx, opts) {
  * opts: { W, H } 逻辑尺寸
  * 内部设置 canvas.width/height = 逻辑×dpr，并 ctx.scale(dpr,dpr)
  */
+// 取设备像素比：优先 getWindowInfo（新基础库），回退 getSystemInfoSync（兼容旧版与测试 mock）
+function getDpr() {
+  var dpr = 2
+  try {
+    if (wx.getWindowInfo) {
+      var wi = wx.getWindowInfo()
+      if (wi && wi.pixelRatio) dpr = wi.pixelRatio
+    } else if (wx.getSystemInfoSync) {
+      var si = wx.getSystemInfoSync()
+      if (si && si.pixelRatio) dpr = si.pixelRatio
+    }
+  } catch (e) { /* 保留默认 dpr=2 */ }
+  return dpr
+}
+
 function drawHeader(canvas, title, dateStr, gradient, opts) {
   opts = opts || {}
   var W = opts.W || 300
   var H = opts.H || 610
-  var dpr = wx.getSystemInfoSync().pixelRatio || 2
+  var dpr = getDpr()
   canvas.width = W * dpr
   canvas.height = H * dpr
   var ctx = canvas.getContext('2d')
@@ -264,6 +279,13 @@ function exportAndSave(canvas, ctx, opts) {
   function doExport() {
     wx.canvasToTempFilePath({
       canvas: canvas,
+      // 显式传宽高（canvas 像素坐标，已含 dpr），部分真机缺省会导出空白/失败
+      x: 0,
+      y: 0,
+      width: canvas.width,
+      height: canvas.height,
+      destWidth: canvas.width,
+      destHeight: canvas.height,
       success: function (res) {
         wx.saveImageToPhotosAlbum({
           filePath: res.tempFilePath,
@@ -315,6 +337,7 @@ function exportAndSave(canvas, ctx, opts) {
 
 module.exports = {
   getToday: getToday,
+  getDpr: getDpr,
   drawHeader: drawHeader,
   drawRow: drawRow,
   drawDivider: drawDivider,

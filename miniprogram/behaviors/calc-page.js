@@ -64,7 +64,10 @@ module.exports = Behavior({
         var head = report.drawHeader(canvas, opts.title, null, opts.theme, { W: 300, H: H })
         var ctx = head.ctx, W = head.W
 
+        var finished = false
         var afterDraw = function () {
+          if (finished) return
+          finished = true
           report.drawBrandStrip(ctx, {
             W: W, bottomY: head.H, theme: opts.theme,
             slogan: opts.slogan || '',
@@ -80,9 +83,29 @@ module.exports = Behavior({
 
         var runDraw = function () {
           if (opts.draw) {
-            var r = opts.draw(canvas, ctx, W, H, that.data)
+            var r
+            try {
+              r = opts.draw(canvas, ctx, W, H, that.data)
+            } catch (e) {
+              // 同步 draw 抛错：恢复按钮状态，避免 isSaving 永久卡 true
+              console.error('[saveImage] draw 异常：', e)
+              if (!finished) {
+                finished = true
+                wx.showToast({ title: '保存失败，请重试', icon: 'none' })
+                that.setData({ isSaving: false })
+              }
+              return
+            }
             if (r && typeof r.then === 'function') {
-              r.then(afterDraw).catch(function () { afterDraw() })
+              // 异步 draw（如塔罗异步加载卡面）：失败只重置+提示，不重复 afterDraw/导出
+              r.then(afterDraw).catch(function (e) {
+                console.error('[saveImage] 异步 draw 失败：', e)
+                if (!finished) {
+                  finished = true
+                  wx.showToast({ title: '保存失败，请重试', icon: 'none' })
+                  that.setData({ isSaving: false })
+                }
+              })
             } else {
               afterDraw()
             }
@@ -93,10 +116,13 @@ module.exports = Behavior({
         try {
           runDraw()
         } catch (e) {
-          // draw 抛错兜底：恢复按钮状态并提示，避免 isSaving 永久卡 true 导致按钮变灰无反应
-          console.error('[saveImage] draw 异常：', e)
-          wx.showToast({ title: '保存失败，请重试', icon: 'none' })
-          that.setData({ isSaving: false })
+          // 兜底：任何未预期异常都恢复按钮状态，避免 isSaving 永久卡 true 导致按钮变灰无反应
+          console.error('[saveImage] 未预期异常：', e)
+          if (!finished) {
+            finished = true
+            wx.showToast({ title: '保存失败，请重试', icon: 'none' })
+            that.setData({ isSaving: false })
+          }
         }
       })
     },
