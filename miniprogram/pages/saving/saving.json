@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "存钱段位",
-  "usingComponents": {
-    "calc-input": "/components/calc-input/calc-input"
-  }
-}

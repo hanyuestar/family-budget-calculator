@@ -1,6 +1,6 @@
 # 广告位预埋记录
 
-## 日期：最后更新 2026-07-14（对齐实际代码）
+## 日期：最后更新 2026-07-29（财富健康指数替换存钱段位，对齐实际代码）
 
 ## 广告策略
 
@@ -16,7 +16,7 @@
 | 首页 | Banner | 固定底部 | 页面最底部 | adunit-banner-home-002 |
 | 支出计算 | Banner | 固定底部 | 页面最底部 | adunit-banner-index-001 |
 | 财富层级 | Banner | 固定底部 | 页面最底部 | adunit-banner-wealth-001 |
-| 存钱段位 | Banner | 固定底部 | 页面最底部 | adunit-banner-saving-001 |
+| 财富健康指数 | Banner | 固定底部 | 页面最底部 | adunit-banner-wealthhealth-001 |
 | BMI | Banner | 固定底部 | 页面最底部 | adunit-banner-bmi-001 |
 | 时光进度条 | Banner | 固定底部 | 页面最底部 | adunit-banner-progress-001 |
 | 亲戚关系 | Banner | 固定底部 | 页面最底部 | adunit-banner-relation-001 |
@@ -31,7 +31,7 @@
 - `pages/home/home.wxml` — 底部固定 Banner `home-002`
 - `pages/index/index.wxml` — 底部固定 Banner `index-001`
 - `pages/wealth/wealth.wxml` — 底部固定 Banner `wealth-001`
-- `pages/saving/saving.wxml` — 底部固定 Banner `saving-001`
+- `pages/wealth-health/wealth-health.wxml` — 底部固定 Banner `wealthhealth-001`
 - `pages/bmi/bmi.wxml` — 底部固定 Banner `bmi-001`
 - `pages/progress/progress.wxml` — 底部固定 Banner `progress-001`
 - `pages/relation/relation.wxml` — 底部固定 Banner `relation-001`
@@ -45,7 +45,7 @@
    - `adunit-banner-home-002` → 首页 Banner 真实 ID
    - `adunit-banner-index-001` → 支出页 Banner 真实 ID
    - `adunit-banner-wealth-001` → 财富页 Banner 真实 ID
-   - `adunit-banner-saving-001` → 存钱段位 Banner 真实 ID
+   - `adunit-banner-wealthhealth-001` → 财富健康指数 Banner 真实 ID
    - `adunit-banner-bmi-001` → BMI Banner 真实 ID
    - `adunit-banner-progress-001` → 时光进度条 Banner 真实 ID
    - `adunit-banner-relation-001` → 亲戚关系 Banner 真实 ID
