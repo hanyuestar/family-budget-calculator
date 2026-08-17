@@ -83,13 +83,11 @@ function getLatest(n) {
 // 切换收藏
 function star(id) {
   var list = all()
-  for (var i = 0; i < list.length; i++) {
-    if (list[i].id === id) {
-      list[i].star = !list[i].star
-      break
-    }
+  var idx = list.findIndex(function (item) { return item.id === id })
+  if (idx >= 0) {
+    list[idx].star = !list[idx].star
+    save(list)
   }
-  save(list)
 }
 
 // 删除单条

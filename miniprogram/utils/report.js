@@ -87,6 +87,26 @@ function wrapText(ctx, text, maxWidth, maxLines) {
   return lines.length ? lines : [text]
 }
 
+/**
+ * 圆角矩形填充（消除多处重复样板）。
+ * 先设 fillStyle 再画路径并 fill，等价于原先逐处手写 beginPath/arc/closePath/fill。
+ */
+function drawRoundRect(ctx, x, y, w, h, r, fillStyle) {
+  ctx.fillStyle = fillStyle
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.lineTo(x + w - r, y)
+  ctx.arc(x + w - r, y + r, r, -Math.PI / 2, 0)
+  ctx.lineTo(x + w, y + h - r)
+  ctx.arc(x + w - r, y + h - r, r, 0, Math.PI / 2)
+  ctx.lineTo(x + r, y + h)
+  ctx.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI)
+  ctx.lineTo(x, y + r)
+  ctx.arc(x + r, y + r, r, Math.PI, -Math.PI / 2)
+  ctx.closePath()
+  ctx.fill()
+}
+
 function drawBrandStrip(ctx, opts) {
   var W = opts.W || 300
   var theme = opts.theme || ['#667eea', '#764ba2']
@@ -108,20 +128,7 @@ function drawBrandStrip(ctx, opts) {
   // 品牌卡片
   var cx = 12, cw = W - 24, ch = 122, cy = lineY + 12
 
-  ctx.fillStyle = dark ? '#2e2e50' : '#F4F5F9'
-  var cr = 12
-  ctx.beginPath()
-  ctx.moveTo(cx + cr, cy)
-  ctx.lineTo(cx + cw - cr, cy)
-  ctx.arc(cx + cw - cr, cy + cr, cr, -Math.PI / 2, 0)
-  ctx.lineTo(cx + cw, cy + ch - cr)
-  ctx.arc(cx + cw - cr, cy + ch - cr, cr, 0, Math.PI / 2)
-  ctx.lineTo(cx + cr, cy + ch)
-  ctx.arc(cx + cr, cy + ch - cr, cr, Math.PI / 2, Math.PI)
-  ctx.lineTo(cx, cy + cr)
-  ctx.arc(cx + cr, cy + cr, cr, Math.PI, -Math.PI / 2)
-  ctx.closePath()
-  ctx.fill()
+  drawRoundRect(ctx, cx, cy, cw, ch, 12, dark ? '#2e2e50' : '#F4F5F9')
 
   // --- 左侧：logo 圆 + 名称 + slogan + 长按引导 ---
   var lx = cx + 18, ly = cy + 22, lr = 16
@@ -166,20 +173,8 @@ function drawBrandStrip(ctx, opts) {
   ctx.fillText('长按识别小程序码 →', textX, ly + lr + 40)
 
   // --- 右侧：小程序码（白色底框）---
-  var boxX = qrX - qrPad, boxY = qrY - qrPad, boxS = qrSize + qrPad * 2, br = 8
-  ctx.fillStyle = '#ffffff'
-  ctx.beginPath()
-  ctx.moveTo(boxX + br, boxY)
-  ctx.lineTo(boxX + boxS - br, boxY)
-  ctx.arc(boxX + boxS - br, boxY + br, br, -Math.PI / 2, 0)
-  ctx.lineTo(boxX + boxS, boxY + boxS - br)
-  ctx.arc(boxX + boxS - br, boxY + boxS - br, br, 0, Math.PI / 2)
-  ctx.lineTo(boxX + br, boxY + boxS)
-  ctx.arc(boxX + br, boxY + boxS - br, br, Math.PI / 2, Math.PI)
-  ctx.lineTo(boxX, boxY + br)
-  ctx.arc(boxX + br, boxY + br, br, Math.PI, -Math.PI / 2)
-  ctx.closePath()
-  ctx.fill()
+  var boxX = qrX - qrPad, boxY = qrY - qrPad, boxS = qrSize + qrPad * 2
+  drawRoundRect(ctx, boxX, boxY, boxS, boxS, 8, '#ffffff')
 
   // 保存码坐标，exportAndSave 用 canvas.createImage 异步加载
   if (qr && qr.path) {
@@ -259,19 +254,7 @@ function drawDivider(ctx, x1, y, x2) {
 function drawBadge(ctx, o) {
   var x = o.x, y = o.y, w = o.w, h = o.h, r = o.r || 18
   var fz = o.fontSize || 16
-  ctx.fillStyle = o.bg
-  ctx.beginPath()
-  ctx.moveTo(x + r, y)
-  ctx.lineTo(x + w - r, y)
-  ctx.arc(x + w - r, y + r, r, -Math.PI / 2, 0)
-  ctx.lineTo(x + w, y + h - r)
-  ctx.arc(x + w - r, y + h - r, r, 0, Math.PI / 2)
-  ctx.lineTo(x + r, y + h)
-  ctx.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI)
-  ctx.lineTo(x, y + r)
-  ctx.arc(x + r, y + r, r, Math.PI, -Math.PI / 2)
-  ctx.closePath()
-  ctx.fill()
+  drawRoundRect(ctx, x, y, w, h, r, o.bg)
   ctx.fillStyle = o.textColor || '#ffffff'
   ctx.font = 'bold ' + fz + 'px sans-serif'
   ctx.textAlign = 'center'

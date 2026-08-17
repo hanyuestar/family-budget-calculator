@@ -7,13 +7,15 @@
  */
 function formatMoney(num) {
   if (num === null || num === undefined || isNaN(num)) return '0'
-  // 处理小数部分
-  var parts = String(num).split('.')
-  var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  if (parts.length > 1) {
-    return intPart + '.' + parts[1]
+  // 用 Intl 千分位格式化，避免超大数值走 String(num) 触发科学计数法（如 1e21）
+  try {
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 20 }).format(num)
+  } catch (e) {
+    // 极端环境回退：手动千分位
+    var parts = String(num).split('.')
+    var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    return parts.length > 1 ? intPart + '.' + parts[1] : intPart
   }
-  return intPart
 }
 
 /**

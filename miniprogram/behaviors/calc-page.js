@@ -131,6 +131,16 @@ module.exports = Behavior({
         var ctx = head.ctx
 
         var finished = false
+        // 统一失败兜底：恢复按钮状态，避免 isSaving 永久卡 true 导致按钮变灰无反应（消除 3 处重复样板）
+        var failSave = function (e, label) {
+          console.error('[saveImage] ' + (label || '异常') + '：', e)
+          if (!finished) {
+            finished = true
+            wx.showToast({ title: '保存失败，请重试', icon: 'none' })
+            that.setData({ isSaving: false })
+          }
+        }
+
         var afterDraw = function () {
           if (finished) return
           finished = true
@@ -153,25 +163,13 @@ module.exports = Behavior({
             try {
               r = opts.draw(canvas, ctx, W, H, that.data)
             } catch (e) {
-              // 同步 draw 抛错：恢复按钮状态，避免 isSaving 永久卡 true
-              console.error('[saveImage] draw 异常：', e)
-              if (!finished) {
-                finished = true
-                wx.showToast({ title: '保存失败，请重试', icon: 'none' })
-                that.setData({ isSaving: false })
-              }
+              // 同步 draw 抛错：交由 failSave 恢复按钮状态
+              failSave(e, 'draw 异常')
               return
             }
             if (r && typeof r.then === 'function') {
               // 异步 draw（如塔罗异步加载卡面）：失败只重置+提示，不重复 afterDraw/导出
-              r.then(afterDraw).catch(function (e) {
-                console.error('[saveImage] 异步 draw 失败：', e)
-                if (!finished) {
-                  finished = true
-                  wx.showToast({ title: '保存失败，请重试', icon: 'none' })
-                  that.setData({ isSaving: false })
-                }
-              })
+              r.then(afterDraw).catch(function (e) { failSave(e, '异步 draw 失败') })
             } else {
               afterDraw()
             }
@@ -182,13 +180,8 @@ module.exports = Behavior({
         try {
           runDraw()
         } catch (e) {
-          // 兜底：任何未预期异常都恢复按钮状态，避免 isSaving 永久卡 true 导致按钮变灰无反应
-          console.error('[saveImage] 未预期异常：', e)
-          if (!finished) {
-            finished = true
-            wx.showToast({ title: '保存失败，请重试', icon: 'none' })
-            that.setData({ isSaving: false })
-          }
+          // 兜底：任何未预期异常都恢复按钮状态
+          failSave(e, '未预期异常')
         }
       })
     },

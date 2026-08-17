@@ -70,10 +70,9 @@ var DEDUCT_ITEMS = [
   { id: 'pension', name: '个人养老金', type: 'bool', note: '12000 元/年' }
 ]
 
-Page({
-  behaviors: [calcPage],
-
-  data: {
+// 页面默认数据：data 初始值 与 reset() 共用同一份，避免两者漂移 / 新增字段漏 reset
+function defaultWealthHealthData() {
+  return {
     // 基础信息
     birthYear: '', annualPreTaxWan: '', workStartYear: '',
     birthYearOptions: BIRTH_YEAR_OPTS, birthYearIndex: -1,
@@ -104,7 +103,13 @@ Page({
     showResult: false, isSaving: false,
 
     share: { ready: false, title: '', path: '/pages/wealth-health/wealth-health' }
-  },
+  }
+}
+
+Page({
+  behaviors: [calcPage],
+
+  data: defaultWealthHealthData(),
 
   // 组装计算输入
   buildInput: function () {
@@ -175,25 +180,7 @@ Page({
   },
 
   reset: function () {
-    var city = buildCityPatch('shenzhen')
-    this.setData({
-      birthYear: '', annualPreTaxWan: '', workStartYear: '',
-      birthYearOptions: BIRTH_YEAR_OPTS, birthYearIndex: -1,
-      workStartYearOptions: WORK_YEAR_DEFAULT_OPTS, workStartYearIndex: -1,
-      cityKey: city.cityKey, cityIndex: city.cityIndex,
-      medicalTiers: city.medicalTiers, hasMedicalTiers: city.hasMedicalTiers, medicalTier: city.medicalTier,
-      fundMinPct: city.fundMinPct, fundMaxPct: city.fundMaxPct,
-      fundRate: city.fundRate, fundRatePct: city.fundRatePct, cityRateText: city.cityRateText, rentMonthly: city.rentMonthly,
-      includeFund: true, fundOverride: '',
-      infant: '', childEdu: '', eduDegree: false, eduCert: false,
-      seriousSelfPay: '', mortgage: false, rent: false,
-      elderlyOnly: false, elderlyShare: '', pension: false,
-      houseValue: '', houseLoan: '', cash: '', invest: '', other: '',
-      taxMode: 'preTax', fundMode: 'inc',
-      result: null, multiple: 0, rank: null, paw: null, progress: 0,
-      showResult: false,
-      share: { ready: false, title: '', path: '/pages/wealth-health/wealth-health' }
-    })
+    this.setData(defaultWealthHealthData())
   },
 
   // ---- 自定义输入控件 ----

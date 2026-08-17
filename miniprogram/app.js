@@ -73,6 +73,8 @@ App({
       }
     }
 
+    // 注册前先解绑同名回调，避免异常路径下叠加多个 onClose 侦听
+    ad.offClose(done)
     ad.onClose(done)
     ad.show().catch(function () {
       ad.offClose(done)
