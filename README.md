@@ -120,7 +120,7 @@ family-budget-calculator/
 │   │       ├── data/cards.js     #   22 张大阿尔卡纳 + 3 牌阵 + 抽牌函数
 │   │       └── assets/jpg/       #   卡面图（400×400 jpg，22 张）
 │   ├── components/calc-input/    # 通用输入行组件
-│   ├── behaviors/calc-page.js    # 通用页面行为（返回/分享/暗色/历史恢复/保存脚手架）
+│   ├── behaviors/calc-page.js    # 通用页面行为（返回/分享/暗色/历史恢复/saveResultTemplate 保存模板）
 │   ├── utils/
 │   │   ├── report.js             # 报告出图（Canvas 2.0：header/品牌条/footer/导出）
 │   │   ├── history.js            # 本地历史存储
@@ -147,7 +147,7 @@ family-budget-calculator/
 | 中央工具注册表 | `config/tools.js` | `appName` + `tools` 数组，首页列表唯一数据源 |
 | 通用报告生成 | `utils/report.js` | `drawHeader / drawBrandStrip / drawFooter / exportAndSave`，Canvas 2.0 + 暗色适配 |
 | 通用输入组件 | `components/calc-input/` | 封装输入行，支持 `symbol`(¥) / `unit`(万元) |
-| 通用页面行为 | `behaviors/calc-page.js` | `goHome`(带插屏) + `onShareAppMessage` + 暗色同步 + 历史恢复 + `saveImage` 保存脚手架 |
+| 通用页面行为 | `behaviors/calc-page.js` | `goHome`(带插屏) + `onShareAppMessage` + 暗色同步 + 历史恢复 + `saveResultTemplate`(统一保存模板) + `saveImage`(Canvas 出图脚手架) |
 | 金额格式化 | `utils/format.js` | `formatMoney`(千分位) / `formatWan`(1 位小数) |
 | 历史存储 | `utils/history.js` | `add / getAll / getByTool / star / remove / clear`，FIFO 100 + 收藏 30 |
 
@@ -170,8 +170,9 @@ family-budget-calculator/
    }
    ```
 3. **新建页面四件套** `pages/xxx/xxx.{js,wxml,wxss,json}`：
-   - `.js`：`behaviors: [require('../../behaviors/calc-page.js')]`，`data` 含 `share`；输入用 `<calc-input>`，计算完写 `share`；保存调 `report.*`；实现 `restoreHistory` 以支持历史回填。
+   - `.js`：`behaviors: [require('../../behaviors/calc-page.js')]`，`data` 含 `share`；输入用 `<calc-input>`，计算完写 `share`；**保存统一调 `this.saveResultTemplate(opts)`**（只需传 `toolId/toolName/icon/input/summary/title/theme/slogan/footer/hook/guard/noResultHint/draw`，isSaving 守卫与历史写入自动处理，`draw(canvas,ctx,W,H,data)` 写自己的海报绘制）；实现 `restoreHistory` 以支持历史回填。
    - `.json`：`usingComponents: { "calc-input": "/components/calc-input/calc-input" }`
+   - 保存模板细节与完整测试写法见根目录 `测试脚本复用指南.md`。
 4. （可选）复用全局样式 `.card` / `.btn*` / `.input-row` / `.ad-banner-wrap`。
 
 首页网格会按工具数量自适应列数（≤4 工具 2 列，5~8 工具 3 列，更多则 4 列），无需额外配置。
@@ -248,7 +249,7 @@ git -c credential.helper= -c http.proxy= \
 
 ### 不纳入版本库的内容
 
-已在根 `.gitignore` 排除：`tarot-sources/`（卡面源图，约 69MB）、`v2.1.1.7z` / `v2.2.1.7z`（旧备份）、`.workbuddy/`（项目隐私记忆）。
+已在根 `.gitignore` 排除：`tarot-sources/`（卡面源图，约 69MB）、`.workbuddy/`（项目隐私记忆）。旧版本备份 7z 已于 2026-08-17 清理（源码由 git 历史管理）。
 
 ---
 
