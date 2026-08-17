@@ -6,6 +6,7 @@
   "scripts": {
     "test": "node miniprogram/run_tests.js",
     "test:tarot": "node miniprogram/test_tarot.js",
-    "test:all": "node miniprogram/test_all.js"
+    "test:all": "node miniprogram/test_all.js",
+    "test:buttons": "node miniprogram/test_buttons.js"
   }
 }

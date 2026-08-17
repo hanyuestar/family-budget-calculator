@@ -1,6 +1,39 @@
 // utils/report.js - 通用结果报告生成（Canvas 2.0 + 品牌条 + DPR高清）
 // Canvas 2.0：page 用 createSelectorQuery 取节点 → canvas.width/height = 逻辑×dpr → ctx.scale(dpr,dpr)
 
+// ---- 常量：画布默认逻辑尺寸（dp） ----
+var DEFAULT_W = 300
+var DEFAULT_H = 610
+
+// ---- 模块级缓存：DPR 与主题色 ----
+// DPR 在会话内固定不变 → 缓存一次即可，避免重复调用 getWindowInfo/getSystemInfoSync
+var _cachedDpr = null
+// 主题色缓存，由 calc-page.js 在页面 attached/show 生命周期同步更新
+var _cachedTheme = null
+var _cachedDark = false
+
+// 供 calc-page.js 在页面生命周期里调用，保持 DPR/主题缓存与真实状态一致
+function setTheme(theme) {
+  _cachedTheme = theme
+  _cachedDark = theme === 'dark'
+}
+
+function getDpr() {
+  if (_cachedDpr != null) return _cachedDpr
+  var dpr = 2
+  try {
+    if (wx.getWindowInfo) {
+      var wi = wx.getWindowInfo()
+      if (wi && wi.pixelRatio) dpr = wi.pixelRatio
+    } else if (wx.getSystemInfoSync) {
+      var si = wx.getSystemInfoSync()
+      if (si && si.pixelRatio) dpr = si.pixelRatio
+    }
+  } catch (e) { /* 保留默认 dpr=2 */ }
+  _cachedDpr = dpr
+  return _cachedDpr
+}
+
 function getToday() {
   var now = new Date()
   return now.getFullYear() + '-' +
@@ -9,6 +42,9 @@ function getToday() {
 }
 
 function isDark() {
+  // 优先使用缓存（由 setTheme 在页面生命周期同步）。
+  // 回退到 getApp()，防止 cache 未初始化（如单元测试）
+  if (_cachedTheme !== null) return _cachedDark
   var app = getApp()
   return app && app.globalData && app.globalData.theme === 'dark'
 }
@@ -167,26 +203,12 @@ function drawBrandStrip(ctx, opts) {
  * canvas: Canvas 2.0 节点（createSelectorQuery 取到的 res[0].node）
  * opts: { W, H } 逻辑尺寸
  * 内部设置 canvas.width/height = 逻辑×dpr，并 ctx.scale(dpr,dpr)
+ * 注：getDpr 已上移到文件顶部（模块级缓存版，此处不再重复声明）
  */
-// 取设备像素比：优先 getWindowInfo（新基础库），回退 getSystemInfoSync（兼容旧版与测试 mock）
-function getDpr() {
-  var dpr = 2
-  try {
-    if (wx.getWindowInfo) {
-      var wi = wx.getWindowInfo()
-      if (wi && wi.pixelRatio) dpr = wi.pixelRatio
-    } else if (wx.getSystemInfoSync) {
-      var si = wx.getSystemInfoSync()
-      if (si && si.pixelRatio) dpr = si.pixelRatio
-    }
-  } catch (e) { /* 保留默认 dpr=2 */ }
-  return dpr
-}
-
 function drawHeader(canvas, title, dateStr, gradient, opts) {
   opts = opts || {}
-  var W = opts.W || 300
-  var H = opts.H || 610
+  var W = opts.W || DEFAULT_W
+  var H = opts.H || DEFAULT_H
   var dpr = getDpr()
   canvas.width = W * dpr
   canvas.height = H * dpr
@@ -222,7 +244,7 @@ function drawRow(ctx, o) {
   ctx.fillStyle = o.valueColor || fill('text')
   ctx.font = 'bold ' + (o.valueSize || 20) + 'px sans-serif'
   ctx.textAlign = 'right'
-  ctx.fillText(o.value, o.valueX || 270, o.y)
+  ctx.fillText(o.value, o.valueX || (o.W || DEFAULT_W) - 30, o.y)
 }
 
 function drawDivider(ctx, x1, y, x2) {
@@ -264,7 +286,7 @@ function drawFooter(ctx, text, H) {
   ctx.fillStyle = fill('muted')
   ctx.font = '10px sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText(text, 150, (H || 610) - 20)
+  ctx.fillText(text, DEFAULT_W / 2, (H || DEFAULT_H) - 20)
 }
 
 /**
@@ -336,8 +358,11 @@ function exportAndSave(canvas, ctx, opts) {
 }
 
 module.exports = {
+  DEFAULT_W: DEFAULT_W,
+  DEFAULT_H: DEFAULT_H,
   getToday: getToday,
   getDpr: getDpr,
+  setTheme: setTheme,
   drawHeader: drawHeader,
   drawRow: drawRow,
   drawDivider: drawDivider,

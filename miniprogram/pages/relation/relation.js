@@ -5,7 +5,6 @@
 
 var calcPage = require('../../behaviors/calc-page.js')
 var report = require('../../utils/report.js')
-var history = require('../../utils/history.js')
 
 // 按钮（UI展示）
 var STEP_WORD = {
@@ -761,28 +760,19 @@ Page({
   },
 
   saveResult: function () {
-    var that = this
-    if (this.data.isSaving) return
-    if (!this.data.result && !this.data.notSupported) {
-      wx.showToast({ title: '请先点选关系', icon: 'none' })
-      return
-    }
-    this.setData({ isSaving: true })
     var d = this.data
-
-    if (!d.notSupported && d.chain.length >= 2) {
-      history.add('relation', '亲戚关系', '👪',
-        { chain: d.chain },
-        d.chainText + ' → ' + d.result)
-    }
-
-    this.saveImage({
+    var shouldRecord = !d.notSupported && d.chain.length >= 2
+    this.saveResultTemplate({
+      toolId: 'relation', toolName: '亲戚关系', icon: '👪',
+      input: shouldRecord ? { chain: d.chain } : undefined,
+      summary: shouldRecord ? (d.chainText + ' → ' + d.result) : '',
       title: '亲戚关系',
       theme: ['#fa709a', '#fee140'],
-      H: 610,
       slogan: '亲戚关系，不再叫错',
       footer: '',
       hook: d.notSupported ? '来测测你的亲戚关系' : '我叫 TA「' + d.result + '」，来测测你的亲戚关系',
+      guard: function (d) { return d.result || d.notSupported },
+      noResultHint: '请先点选关系',
       draw: function (canvas, ctx, W, H, data) {
         ctx.fillStyle = '#999'
         ctx.font = '12px sans-serif'

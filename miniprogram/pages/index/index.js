@@ -1,7 +1,6 @@
 // pages/index/index.js - 支出计算页
 var format = require('../../utils/format.js')
 var report = require('../../utils/report.js')
-var history = require('../../utils/history.js')
 var calcPage = require('../../behaviors/calc-page.js')
 
 Page({
@@ -158,80 +157,82 @@ Page({
     this.drawPie(pieData, annualTotal)
   },
 
-  // 绘制环形饼图
+  // 绘制环形饼图（Canvas 2.0：createSelectorQuery 取节点 + getContext('2d')，与出图链路统一）
   drawPie: function (data, total) {
-    if (!total || total <= 0) {
-      // 清空画布
-      var ctxClear = wx.createCanvasContext('pieCanvas')
-      ctxClear.draw()
-      return
-    }
+    wx.createSelectorQuery()
+      .select('#pieCanvas')
+      .fields({ node: true })
+      .exec(function (res) {
+        if (!res || !res[0] || !res[0].node) return
+        var canvas = res[0].node
+        var dpr = report.getDpr()
+        var size = 170
+        canvas.width = size * dpr
+        canvas.height = size * dpr
+        var ctx = canvas.getContext('2d')
+        ctx.scale(dpr, dpr)
+        ctx.clearRect(0, 0, size, size)
 
-    var ctx = wx.createCanvasContext('pieCanvas')
-    var centerX = 85
-    var centerY = 85
-    var outerRadius = 75
-    var innerRadius = 45
+        if (!total || total <= 0) return
 
-    var startAngle = -Math.PI / 2 // 从顶部开始
-    // 绘制每个扇形
-    for (var i = 0; i < data.length; i++) {
-      var item = data[i]
-      var angle = (item.value / total) * Math.PI * 2
-      var endAngle = startAngle + angle
+        var centerX = size / 2
+        var centerY = size / 2
+        var outerRadius = 75
+        var innerRadius = 45
 
-      // 外环
-      ctx.beginPath()
-      ctx.arc(centerX, centerY, outerRadius, startAngle, endAngle)
-      ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true)
-      ctx.closePath()
-      ctx.setFillStyle(item.color)
-      ctx.fill()
+        var startAngle = -Math.PI / 2 // 从顶部开始
+        // 绘制每个扇形
+        for (var i = 0; i < data.length; i++) {
+          var item = data[i]
+          var angle = (item.value / total) * Math.PI * 2
+          var endAngle = startAngle + angle
 
-      startAngle = endAngle
-    }
+          // 外环
+          ctx.beginPath()
+          ctx.arc(centerX, centerY, outerRadius, startAngle, endAngle)
+          ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true)
+          ctx.closePath()
+          ctx.fillStyle = item.color
+          ctx.fill()
 
-    // 中心文字
-    ctx.setFontSize(11)
-    ctx.setTextAlign('center')
-    ctx.setFillStyle('#999')
-    ctx.fillText('年度支出', centerX, centerY - 8)
-    ctx.setFontSize(13)
-    ctx.setFillStyle('#333')
-    ctx.fillText(format.formatMoney(Math.round(total)), centerX, centerY + 12)
-    ctx.draw()
+          startAngle = endAngle
+        }
+
+        // 中心文字
+        ctx.font = '11px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillStyle = '#999'
+        ctx.fillText('年度支出', centerX, centerY - 8)
+        ctx.font = '13px sans-serif'
+        ctx.fillStyle = '#333'
+        ctx.fillText(format.formatMoney(Math.round(total)), centerX, centerY + 12)
+      })
   },
 
   // 保存结果到相册 + 记录历史
   saveResult: function () {
-    var that = this
-    if (this.data.isSaving) return
-    this.setData({ isSaving: true })
     var d = this.data
-    if (d.annualTotal <= 0) {
-      wx.showToast({ title: '请先输入支出数据', icon: 'none' })
-      this.setData({ isSaving: false })
-      return
-    }
-    // 写入历史
-    history.add('expense', '家庭支出计算', '🧮', {
-      mortgage: d.mortgage, carLoan: d.carLoan, utility: d.utility,
-      food: d.food, transport: d.transport, telecom: d.telecom,
-      babyFood: d.babyFood, babyEdu: d.babyEdu, babyOther: d.babyOther,
-      parents: d.parents, social: d.social, insurance: d.insurance,
-      travel: d.travel, electronics: d.electronics, otherAnnual: d.otherAnnual
-    }, '月支出 ¥' + d.monthlyTotalStr + ' | 年度 ¥' + d.annualTotalStr + ' | 保险 ' + d.insuranceRatioStr)
-
-    this.saveImage({
+    this.saveResultTemplate({
+      toolId: 'expense', toolName: '家庭支出计算', icon: '🧮',
+      input: {
+        mortgage: d.mortgage, carLoan: d.carLoan, utility: d.utility,
+        food: d.food, transport: d.transport, telecom: d.telecom,
+        babyFood: d.babyFood, babyEdu: d.babyEdu, babyOther: d.babyOther,
+        parents: d.parents, social: d.social, insurance: d.insurance,
+        travel: d.travel, electronics: d.electronics, otherAnnual: d.otherAnnual
+      },
+      summary: '月支出 ¥' + d.monthlyTotalStr + ' | 年度 ¥' + d.annualTotalStr + ' | 保险 ' + d.insuranceRatioStr,
       title: '家庭年度支出报告',
       theme: ['#667eea', '#764ba2'],
       slogan: '每一笔，都算得清',
       footer: '数据仅供参考',
       hook: '我家一年在「' + (d.pieLegend.length ? d.pieLegend[0].name : '生活') + '」上花得最多，你呢？',
+      guard: function (d) { return d.annualTotal > 0 },
+      noResultHint: '请先输入支出数据',
       draw: function (canvas, ctx, W, H, data) {
-        report.drawRow(ctx, { label: '月度总支出', value: '¥ ' + data.monthlyTotalStr, y: 120, valueColor: '#4A90D9', valueSize: 20 })
-        report.drawRow(ctx, { label: '年度总支出', value: '¥ ' + data.annualTotalStr, y: 160, valueColor: '#8e44ad', valueSize: 20 })
-        report.drawRow(ctx, { label: '保险占比', value: data.insuranceRatioStr, y: 200, valueColor: data.insuranceColor, valueSize: 20 })
+        report.drawRow(ctx, { label: '月度总支出', value: '¥ ' + data.monthlyTotalStr, y: 120, W: W, valueColor: '#4A90D9', valueSize: 20 })
+        report.drawRow(ctx, { label: '年度总支出', value: '¥ ' + data.annualTotalStr, y: 160, W: W, valueColor: '#8e44ad', valueSize: 20 })
+        report.drawRow(ctx, { label: '保险占比', value: data.insuranceRatioStr, y: 200, W: W, valueColor: data.insuranceColor, valueSize: 20 })
         report.drawDivider(ctx, 30, 220, W - 30)
         ctx.fillStyle = '#666666'
         ctx.font = '13px sans-serif'

@@ -1,6 +1,5 @@
 // pages/progress/progress.js - 年度/人生进度条
 var report = require('../../utils/report.js')
-var history = require('../../utils/history.js')
 var calcPage = require('../../behaviors/calc-page.js')
 
 var LIFE_EXPECT = 80
@@ -69,22 +68,19 @@ Page({
   reset: function () { this.setData({ birth: '', age: 0, lifeProgress: 0, lifeText: '', showLife: false }) },
 
   saveResult: function () {
-    var that = this
-    if (this.data.isSaving) return
-    this.setData({ isSaving: true })
     var d = this.data
+    var curYear = new Date().getFullYear()
 
-    if (d.showLife) {
-      history.add('progress', '时光进度条', '📊', { birth: d.birth },
-        d.age + ' 岁 | 人生进度 ' + d.lifeProgress.toFixed(1) + '%')
-    }
-
-    this.saveImage({
+    this.saveResultTemplate({
+      toolId: 'progress', toolName: '时光进度条', icon: '📊',
+      input: d.showLife ? { birth: d.birth } : undefined,
+      summary: d.showLife ? (d.age + ' 岁 | 人生进度 ' + d.lifeProgress.toFixed(1) + '%') : '',
       title: '我的进度条',
       theme: ['#667eea', '#764ba2'],
       slogan: '时间，看得见',
-      footer: '按预期寿命 80 岁估算，仅供参考',
-      hook: d.yearText.split(' ')[0] + ' 已过「' + d.yearProgress.toFixed(1) + '%」，你的人生进度到哪了？',
+      footer: '按预期寿命 ' + LIFE_EXPECT + ' 岁估算，仅供参考',
+      // 直接用结构化年份（curYear），不再依赖 yearText 字符串切分，避免格式变动导致静默错误
+      hook: curYear + ' 已过「' + d.yearProgress.toFixed(1) + '%」，你的人生进度到哪了？',
       draw: function (canvas, ctx, W, H, data) {
         var rows = [
           { label: data.yearText, p: data.yearProgress },

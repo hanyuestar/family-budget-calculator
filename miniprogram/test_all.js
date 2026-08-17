@@ -269,6 +269,13 @@ async function runWealthHealth() {
   p.onDeductInput({ currentTarget: { dataset: { key: 'seriousSelfPay' } }, detail: { value: '20000' } })
   record(p.data.seriousSelfPay === '20000', '大病医疗自付金额写入')
 
+  // 数据完整性：DEDUCT_ITEMS 的 id 必须与 data 字段一一对应（防 UI 绑定错位，如 seriousIllness/seriousSelfPay 曾不一致）
+  var pIds = fresh('pages/wealth-health/wealth-health.js')
+  var deductIds = pIds.data.deductItems.map(function (item) { return item.id })
+  var missingIds = deductIds.filter(function (id) { return !(id in pIds.data) })
+  record(deductIds.indexOf('seriousSelfPay') >= 0 && missingIds.length === 0,
+    'DEDUCT_ITEMS id 与 data 字段一一对应', 'missing=' + missingIds.join(','))
+
   // ===== 多城市社保/医保比例（直接测 computeFiveOne）=====
   var whCalc = require('./utils/wealth-health.js')
   var CITYSS = require('./data/city-ss.js')
@@ -524,6 +531,55 @@ async function runProgress() {
   record(p6.data.showLife === true && p6.data.age === expAge, 'restoreHistory 还原人生进度')
 }
 
+// ============ 基建回归（refactor 新增 API）============
+function runInfra() {
+  console.log('\n— 基建回归（refactor 新增 API）—')
+
+  var report = require('./utils/report.js')
+  record(report.DEFAULT_W === 300 && report.DEFAULT_H === 610, 'report 导出画布常量 DEFAULT_W=300/DEFAULT_H=610', 'W=' + report.DEFAULT_W)
+  record(report.getDpr() === 2, 'getDpr 缓存返回 pixelRatio=2（mock getSystemInfoSync）', 'dpr=' + report.getDpr())
+  record(report.setTheme('dark') === undefined, 'setTheme 可切换主题缓存（dark 不抛错）')
+  record(report.setTheme('light') === undefined, 'setTheme 切回 light 不抛错')
+
+  var whCalc = require('./utils/wealth-health.js')
+  record(whCalc.STANDARD_DEDUCTION === 60000, 'wealth-health 导出个税基本减除常量 60000', 'v=' + whCalc.STANDARD_DEDUCTION)
+
+  // saveResultTemplate：无结果时懒计算 summary 不被求值（不抛错）且 isSaving 复位
+  var b = fresh('pages/bmi/bmi.js')
+  var threwB = false
+  try { b.saveResult() } catch (e) { threwB = true }
+  record(!threwB && b.data.isSaving === false, 'bmi 无结果 saveResult 不抛错且 isSaving 复位')
+
+  // onInput 防抖：calculate 被触发（测试环境 setTimeout 同步执行）
+  var b2 = fresh('pages/bmi/bmi.js')
+  var calcCalled = 0
+  var origCalc = b2.calculate
+  b2.calculate = function () { calcCalled++; origCalc.call(b2) }
+  b2.onInput({ detail: { field: 'height', value: '170' } })
+  record(calcCalled === 1, 'onInput 防抖后仍触发 calculate', 'calls=' + calcCalled)
+
+  // Canvas 2.0 饼图：drawPie 有数据 / 无数据 / 节点缺失 三种分支均不抛错
+  var e1 = fresh('pages/index/index.js')
+  var threwPie1 = false
+  try { e1.drawPie([{ name: 'x', value: 1, color: '#000' }], 1) } catch (err) { threwPie1 = true }
+  record(!threwPie1, 'index.drawPie 有数据分支不抛错（Canvas 2.0）')
+
+  var e2 = fresh('pages/index/index.js')
+  var threwPie2 = false
+  try { e2.drawPie([], 0) } catch (err) { threwPie2 = true }
+  record(!threwPie2, 'index.drawPie 无数据分支不抛错（clearRect 后返回）')
+
+  var origQuery = wx.createSelectorQuery
+  wx.createSelectorQuery = function () {
+    return { select: function () { return { fields: function () { return { exec: function (cb) { cb([{ node: null }]) } } } } } }
+  }
+  var e3 = fresh('pages/index/index.js')
+  var threwPie3 = false
+  try { e3.drawPie([{ name: 'x', value: 1, color: '#000' }], 1) } catch (err) { threwPie3 = true }
+  wx.createSelectorQuery = origQuery
+  record(!threwPie3, 'drawPie 画布节点缺失不抛错（静默降级）')
+}
+
 // ============ 主流程 ============
 ;(async function () {
   await runBmi()
@@ -531,6 +587,7 @@ async function runProgress() {
   await runRelation()
   await runExpense()
   await runProgress()
+  runInfra()
   global.setTimeout = realSetTimeout
   console.log('\n=== test_all 结果: ' + pass + '/' + (pass + fail) + ' 通过 ===\n')
   if (fail) process.exit(1)

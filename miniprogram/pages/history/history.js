@@ -33,7 +33,9 @@ Page({
   },
 
   refresh: function (filterId) {
-    filterId = filterId || this.data.filterTool || ''
+    // 仅「未传参」(undefined) 表示保持当前筛选；
+    // 传 ''（「全部」标签 data-id=""）表示显式清除筛选 —— 不能用 || 兜底，否则点了「全部」无法回到全部
+    filterId = filterId === undefined ? (this.data.filterTool || '') : filterId
     var list = filterId ? history.getByTool(filterId) : history.getAll()
     // 附加时间文本
     list = list.map(function (item) {

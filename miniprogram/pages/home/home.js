@@ -17,19 +17,23 @@ Page({
     historyCount: 0
   },
 
-  onLoad: function () {
+  // 刷新首页展示数据：工具网格列数 + 主题 + 历史计数
+  refresh: function () {
     var app = getApp()
-    var dark = app.globalData.theme === 'dark'
     this.setData({
       gridCols: calcCols(config.tools.length),
-      isDark: dark,
+      isDark: app.globalData.theme === 'dark',
       historyCount: history.getAll().length
     })
   },
 
+  onLoad: function () {
+    this.refresh()
+  },
+
   onShow: function () {
-    // 每次回到首页刷新历史计数
-    this.setData({ historyCount: history.getAll().length })
+    // 每次回到首页刷新（主题可能变化、历史计数可能增加）
+    this.refresh()
   },
 
   // 主题切换

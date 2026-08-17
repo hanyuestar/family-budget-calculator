@@ -1,9 +1,12 @@
 // app.js - 小程序入口（含主题管理、广告管理）
+var report = require('./utils/report.js')
+
 App({
   onLaunch() {
     // 主题初始化
     var theme = wx.getStorageSync('app_theme') || 'light'
     this.globalData.theme = theme
+    report.setTheme(theme)
 
     // 插屏广告
     if (wx.createInterstitialAd) {
@@ -31,6 +34,8 @@ App({
     var next = current === 'dark' ? 'light' : 'dark'
     this.globalData.theme = next
     wx.setStorageSync('app_theme', next)
+    // 同步 report.js 的主题缓存，避免出图用旧主题色
+    report.setTheme(next)
 
     // 广播给所有页面（通过 eventChannel + 页面 onShow 读取 globalData 也行，
     // 但最简单的是让当前活跃页面直接 setData）

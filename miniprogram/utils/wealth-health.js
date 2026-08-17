@@ -8,6 +8,19 @@
 
 var CITY = require('../data/city-ss.js')
 
+// ---- 常量（专项附加扣除 / 个税相关，单位：元）----
+var STANDARD_DEDUCTION = 60000          // 个税基本减除费用（年）
+var DEDUCT_INFANT_MONTHLY = 2000        // 婴幼儿照护（每孩/月）
+var DEDUCT_CHILD_EDU_MONTHLY = 2000     // 子女教育（每孩/月）
+var DEDUCT_EDU_DEGREE_MONTHLY = 400     // 继续教育-学历（/月）
+var DEDUCT_EDU_CERT_YEARLY = 3600       // 继续教育-职业资格（/年）
+var DEDUCT_SERIOUS_DEDUCT = 15000       // 大病医疗自付起扣线（年）
+var DEDUCT_SERIOUS_CAP = 80000          // 大病医疗年扣上限
+var DEDUCT_MORTGAGE_MONTHLY = 1000      // 首套房贷利息（/月）
+var DEDUCT_ELDERLY_ONLY_MONTHLY = 3000  // 赡养老人-独生（/月）
+var DEDUCT_ELDERLY_SHARE_MONTHLY = 1500 // 赡养老人-分摊上限（/月）
+var DEDUCT_PENSION_YEARLY = 12000       // 个人养老金（/年）
+
 // 个税累进税率表（年度，速算扣除数法）
 var TAX_BRACKETS = [
   { max: 36000, rate: 0.03, quick: 0 },
@@ -74,28 +87,28 @@ function computeFiveOne(annualPreTax, cityKey, medicalTier, fundRate) {
 function computeSpecialMonthly(sel, cityKey) {
   sel = sel || {}
   var total = 0
-  total += (Number(sel.infant) || 0) * 2000
-  total += (Number(sel.childEdu) || 0) * 2000
-  if (sel.eduDegree) total += 400
-  if (sel.eduCert) total += 3600 / 12
+  total += (Number(sel.infant) || 0) * DEDUCT_INFANT_MONTHLY
+  total += (Number(sel.childEdu) || 0) * DEDUCT_CHILD_EDU_MONTHLY
+  if (sel.eduDegree) total += DEDUCT_EDU_DEGREE_MONTHLY
+  if (sel.eduCert) total += DEDUCT_EDU_CERT_YEARLY / 12
   if (sel.seriousSelfPay && Number(sel.seriousSelfPay) > 0) {
-    // 大病医疗：自付超 15,000 部分可扣，年上限 80,000，再 ÷12 转月
-    var d = Math.min(80000, Math.max(0, Number(sel.seriousSelfPay) - 15000)) / 12
+    // 大病医疗：自付超起扣线部分可扣，年上限封顶，再 ÷12 转月
+    var d = Math.min(DEDUCT_SERIOUS_CAP, Math.max(0, Number(sel.seriousSelfPay) - DEDUCT_SERIOUS_DEDUCT)) / 12
     total += d
   }
   // 房贷 / 租金 互斥：房贷优先
   if (sel.mortgage) {
-    total += 1000
+    total += DEDUCT_MORTGAGE_MONTHLY
   } else if (sel.rent) {
     var city = CITY[cityKey] || CITY.shenzhen
     total += city.rentMonthly
   }
   if (sel.elderlyOnly) {
-    total += 3000
+    total += DEDUCT_ELDERLY_ONLY_MONTHLY
   } else if (sel.elderlyShare && Number(sel.elderlyShare) > 0) {
-    total += Math.min(1500, Number(sel.elderlyShare))
+    total += Math.min(DEDUCT_ELDERLY_SHARE_MONTHLY, Number(sel.elderlyShare))
   }
-  if (sel.pension) total += 12000 / 12
+  if (sel.pension) total += DEDUCT_PENSION_YEARLY / 12
   return total
 }
 
@@ -165,7 +178,7 @@ function compute(input) {
   var specialMonthly = computeSpecialMonthly(input.sel, input.cityKey)
   var annualSpecial = specialMonthly * 12
   var annualFiveOne = fi.yearly.total
-  var annualTaxable = annualPreTax - annualFiveOne - annualSpecial - 60000
+  var annualTaxable = annualPreTax - annualFiveOne - annualSpecial - STANDARD_DEDUCTION
   var tax = computeTax(annualTaxable)
   var annualNetSalary = annualPreTax - annualFiveOne - tax
   var monthlyNetSalary = annualNetSalary / 12
@@ -207,6 +220,7 @@ function compute(input) {
 }
 
 module.exports = {
+  STANDARD_DEDUCTION: STANDARD_DEDUCTION,
   TAX_BRACKETS: TAX_BRACKETS,
   clamp: clamp,
   getYear: getYear,

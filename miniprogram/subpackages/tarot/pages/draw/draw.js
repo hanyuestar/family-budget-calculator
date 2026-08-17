@@ -106,23 +106,26 @@ Page({
 
   // 保存出图（含卡面图 + 文案，复用通用出图链路，draw 异步加载卡面）
   saveResult: function () {
-    var that = this
-    if (this.data.isSaving) return
-    if (!this.data.revealed) { wx.showToast({ title: '请先抽牌', icon: 'none' }); return }
-    this.setData({ isSaving: true })
-
     var deck = this.data.deck
     var count = deck.length
     var UNIT = 200                      // 每张牌在图中的竖向占位
     var TOP = 110                       // 内容区起始 y（banner 高80 + 留白30，避开首位标签重叠）
     var H = 305 + count * UNIT + (TOP - 96)   // 顶栏80 + 内容 + 品牌条/footer 预留 + 内容上移补偿
+    var summary = deck.map(function (c) {
+      return c.cn + (c.reversed ? '逆' : '正')
+    }).join(' / ')
 
-    this.saveImage({
+    this.saveResultTemplate({
+      toolId: 'tarot', toolName: '国潮塔罗', icon: '🔮',
+      input: { spread: this.data.spreadId },
+      summary: summary,
       title: this.data.spreadName + ' · 国潮塔罗',
       theme: ['#5b3a89', '#3a2b5f'],
       slogan: '聚合计算 · 国潮塔罗',
       footer: '本结果为娱乐测试，仅供参考，不构成任何建议',
       hook: '我在「聚合计算」抽了张塔罗牌，来试试你的',
+      guard: function (d) { return d.revealed },
+      noResultHint: '请先抽牌',
       H: H,
       draw: function (canvas, ctx, W, H, data) {
         var deck = data.deck

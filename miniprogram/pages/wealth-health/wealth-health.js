@@ -2,7 +2,6 @@
 // 替换原「存钱段位」工具。公式来自 Stanley & Danko《The Millionaire Next Door》。
 var format = require('../../utils/format.js')
 var report = require('../../utils/report.js')
-var history = require('../../utils/history.js')
 var calcPage = require('../../behaviors/calc-page.js')
 var wh = require('../../utils/wealth-health.js')
 var CITY = require('../../data/city-ss.js')
@@ -10,6 +9,11 @@ var CITY = require('../../data/city-ss.js')
 // 城市下拉（已接入 7 城）
 var CITY_KEYS = Object.keys(CITY)
 var CITY_NAMES = CITY_KEYS.map(function (k) { return CITY[k].name })
+
+// ---- 常量 ----
+var MIN_WORKING_AGE = 16              // 法定最低工作年龄
+var BIRTH_YEAR_START = 1940           // 出生年份下拉起始年
+var WORK_YEAR_START = 1960            // 工作起始年份下拉默认起始年
 
 // 年份下拉选项（ descending），与「下拉选择+校验」需求配套
 var CUR_YEAR = new Date().getFullYear()
@@ -24,8 +28,8 @@ function idxInOptions(options, val) {
   var i = options.indexOf(String(val))
   return i < 0 ? 0 : i
 }
-var BIRTH_YEAR_OPTS = buildYearOptions(1940, CUR_YEAR)
-var WORK_YEAR_DEFAULT_OPTS = buildYearOptions(1960, CUR_YEAR)
+var BIRTH_YEAR_OPTS = buildYearOptions(BIRTH_YEAR_START, CUR_YEAR)
+var WORK_YEAR_DEFAULT_OPTS = buildYearOptions(WORK_YEAR_START, CUR_YEAR)
 
 // 由城市生成页面所需的派生字段（档位、公积金区间、比例摘要、租金档等）
 function buildCityPatch(cityKey) {
@@ -58,7 +62,7 @@ var DEDUCT_ITEMS = [
   { id: 'childEdu', name: '子女教育', type: 'perChild', note: '每孩 2000 元/月' },
   { id: 'eduDegree', name: '继续教育（学历）', type: 'bool', note: '400 元/月' },
   { id: 'eduCert', name: '继续教育（职业资格）', type: 'bool', note: '3600 元/年' },
-  { id: 'seriousIllness', name: '大病医疗', type: 'amount', note: '自付超1.5万部分可扣（年上限8万）' },
+  { id: 'seriousSelfPay', name: '大病医疗', type: 'amount', note: '自付超1.5万部分可扣（年上限8万）' },
   { id: 'mortgage', name: '住房贷款利息（首套）', type: 'bool', note: '1000 元/月（与租金互斥）' },
   { id: 'rent', name: '住房租金', type: 'bool', note: '按所在城市标准（与房贷利息互斥）' },
   { id: 'elderlyOnly', name: '赡养老人（独生）', type: 'bool', note: '3000 元/月' },
@@ -209,7 +213,7 @@ Page({
     var opts = this.data.birthYearOptions
     if (!opts || !opts.length) return
     var year = opts[idx]
-    var wsStart = Math.min(Number(year) + 16, CUR_YEAR)
+    var wsStart = Math.min(Number(year) + MIN_WORKING_AGE, CUR_YEAR)
     var wsOpts = buildYearOptions(wsStart, CUR_YEAR)
     var up = { birthYear: year, birthYearIndex: idx, workStartYearOptions: wsOpts }
     if (this.data.workStartYear) {
@@ -291,23 +295,22 @@ Page({
   },
 
   saveResult: function () {
-    var that = this
-    if (this.data.isSaving) return
-    this.setData({ isSaving: true })
     var d = this.data
-    if (!d.showResult) { wx.showToast({ title: '请先填写信息并计算', icon: 'none' }); this.setData({ isSaving: false }); return }
-
     var input = this.buildInput()
     var summary = '财富健康倍数 ' + d.multipleText + ' | ' + (d.rank ? d.rank.label : '未知')
-    history.add('wealth-health', '财富健康指数', '📈', input, summary)
-
     var modeLabel = (d.taxMode === 'preTax' ? '税前' : '税后') + (d.fundMode === 'inc' ? '·含公积金' : '·不含公积金')
-    this.saveImage({
+
+    this.saveResultTemplate({
+      toolId: 'wealth-health', toolName: '财富健康指数', icon: '📈',
+      input: input,
+      summary: summary,
       title: '财富健康指数报告',
       theme: ['#16a085', '#1abc9c'],
       slogan: '看清你的财富积累效率',
       footer: '数据仅供参考 · 娱乐向测算',
       hook: '我的财富健康倍数是 ' + d.multipleText + '，' + (d.rank ? d.rank.label : '') + '，来测测你',
+      guard: function (d) { return d.showResult },
+      noResultHint: '请先填写信息并计算',
       draw: function (canvas, ctx, W, H, data) {
         // 倍数
         ctx.fillStyle = '#888'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center'
@@ -352,7 +355,7 @@ Page({
     var a = inp.assets || {}
     var cp = this.applyCity(Math.max(0, CITY_KEYS.indexOf(inp.cityKey || 'shenzhen')))
     var byOpts = BIRTH_YEAR_OPTS
-    var wsOpts = buildYearOptions(inp.birthYear ? Math.min(Number(inp.birthYear) + 16, CUR_YEAR) : 1960, CUR_YEAR)
+    var wsOpts = buildYearOptions(inp.birthYear ? Math.min(Number(inp.birthYear) + MIN_WORKING_AGE, CUR_YEAR) : WORK_YEAR_START, CUR_YEAR)
     var up = {
       birthYearOptions: byOpts, birthYearIndex: idxInOptions(byOpts, inp.birthYear),
       workStartYearOptions: wsOpts, workStartYearIndex: idxInOptions(wsOpts, inp.workStartYear),

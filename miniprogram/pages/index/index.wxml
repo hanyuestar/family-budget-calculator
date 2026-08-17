@@ -65,7 +65,7 @@
     <!-- 饼图 -->
     <view class="pie-section" wx:if="{{annualTotal > 0}}">
       <view class="pie-title">支出构成占比</view>
-      <canvas canvas-id="pieCanvas" class="pie-canvas"></canvas>
+      <canvas type="2d" id="pieCanvas" class="pie-canvas"></canvas>
 
       <!-- 图例列表 -->
       <view class="legend-list">

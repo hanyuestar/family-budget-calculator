@@ -1,7 +1,6 @@
 // pages/wealth/wealth.js - 财富层级计算页
 var format = require('../../utils/format.js')
 var report = require('../../utils/report.js')
-var history = require('../../utils/history.js')
 var calcPage = require('../../behaviors/calc-page.js')
 
 Page({
@@ -78,24 +77,21 @@ Page({
   },
 
   saveResult: function () {
-    var that = this
-    if (this.data.isSaving) return
-    this.setData({ isSaving: true })
     var d = this.data
-    if (!d.showResult) { wx.showToast({ title: '请先输入资产数据', icon: 'none' }); this.setData({ isSaving: false }); return }
-
-    // 写入历史
-    history.add('wealth', '财富层级测试', '💎', {
-      property: d.property, financial: d.financial, vehicle: d.vehicle, equity: d.equity,
-      mortgageDebt: d.mortgageDebt, carDebt: d.carDebt, consumerDebt: d.consumerDebt, otherDebt: d.otherDebt
-    }, '净资产 ' + d.netAssetStr + '万 | ' + (d.level ? d.level.name : '未知'))
-
-    this.saveImage({
+    this.saveResultTemplate({
+      toolId: 'wealth', toolName: '财富层级测试', icon: '💎',
+      input: {
+        property: d.property, financial: d.financial, vehicle: d.vehicle, equity: d.equity,
+        mortgageDebt: d.mortgageDebt, carDebt: d.carDebt, consumerDebt: d.consumerDebt, otherDebt: d.otherDebt
+      },
+      summary: '净资产 ' + d.netAssetStr + '万 | ' + (d.level ? d.level.name : '未知'),
       title: '家庭财富层级报告',
       theme: ['#667eea', '#764ba2'],
       slogan: '看清你的财富坐标',
       footer: '数据仅供参考',
       hook: '我的家庭净资产排「' + (d.level ? d.level.name : '未知') + '」，测测你第几层',
+      guard: function (d) { return d.showResult },
+      noResultHint: '请先输入资产数据',
       draw: function (canvas, ctx, W, H, data) {
         ctx.fillStyle = '#888'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center'
         ctx.fillText('你的家庭净资产为', W / 2, 115)
