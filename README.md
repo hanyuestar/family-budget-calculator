@@ -250,7 +250,7 @@ git -c credential.helper= -c http.proxy= \
 
 ### 不纳入版本库的内容
 
-已在根 `.gitignore` 排除：`tarot-sources/`（卡面源图，约 69MB）、`.workbuddy/`（项目隐私记忆）。旧版本备份 7z 已于 2026-08-17 清理（源码由 git 历史管理）。
+已在根 `.gitignore` 排除：`.workbuddy/`（项目隐私记忆）。旧版本备份 7z 已于 2026-08-17 清理（源码由 git 历史管理）；塔罗卡面源图 `tarot-sources/`（约 69MB）已于 2026-09-02 清理，运行时仅依赖 `miniprogram/subpackages/tarot/assets/jpg/` 的 22 张 jpg 产物。
 
 ---
 
