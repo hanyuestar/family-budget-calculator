@@ -46,7 +46,6 @@ var wxMock = {
   navigateTo: function (o) { navigateCalls.push(o) },
   navigateBack: function () {},
   redirectTo: function () {},
-  getLocation: function () {},
   getFuzzyLocation: function () {},
   request: function () {},
   canvasToTempFilePath: function (o) { exportCalls++; if (o && o.success) o.success({ tempFilePath: 'tmp://x' }) },
@@ -612,8 +611,7 @@ async function runLunch() {
       if (ok) { if (o && o.success) o.success({ latitude: coord.lat, longitude: coord.lng }) }
       else { if (o && o.fail) o.fail({ errMsg: 'getFuzzyLocation:fail auth deny' }) }
     }
-    // 生产代码已切到 getFuzzyLocation（getLocation 受类目限制无法开通）；两接口同形，一并注入 mock
-    wx.getLocation = fn
+    // 生产代码已切到 getFuzzyLocation（精确位置接口受类目限制无法开通）；仅注入 getFuzzyLocation
     wx.getFuzzyLocation = fn
   }
   var SZ = { lat: 22.5431, lng: 114.0579 }

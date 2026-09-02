@@ -1,7 +1,11 @@
 {
   "description": "家庭支出计算器小程序",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "file", "value": "test_all.js" },
+      { "type": "file", "value": "test_tarot.js" },
+      { "type": "file", "value": "test_buttons.js" }
+    ],
     "include": []
   },
   "setting": {

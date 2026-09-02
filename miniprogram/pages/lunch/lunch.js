@@ -90,7 +90,7 @@ Page({
 
   _doGetLocation: function () {
     var that = this
-    // getLocation（精确位置）受服务类目限制无法开通，改用 getFuzzyLocation（模糊位置，免类目审核、自动通过）。
+    // 精确位置接口受服务类目限制无法开通，故改用 getFuzzyLocation（模糊位置，免类目审核、自动通过）。
     // 返回 wgs84，与 utils/lunch.js 的 wgs2bd 转换链完全兼容，逻辑层无需改动。
     wx.getFuzzyLocation({
       type: 'wgs84',
