@@ -31,32 +31,38 @@
     </view>
 
     <view class="scroll-card huangli-bar" wx:if="{{huangli}}">
-      <view class="hl-item"><text class="strong">{{huangli.date}}</text> {{huangli.week}}</view>
-      <view class="hl-item">{{huangli.yearGZ}} <text class="strong">{{huangli.dayGZ}}</text></view>
-      <view class="hl-item">五行：<text class="strong">{{huangli.wuxing}}</text></view>
-      <view class="hl-item hl-yi">宜：{{huangli.yi}}</view>
-      <view class="hl-item hl-ji">忌：{{huangli.ji}}</view>
+      <view class="scroll-inner">
+        <view class="hl-item"><text class="strong">{{huangli.date}}</text> {{huangli.week}}</view>
+        <view class="hl-item">{{huangli.yearGZ}} <text class="strong">{{huangli.dayGZ}}</text></view>
+        <view class="hl-item">五行：<text class="strong">{{huangli.wuxing}}</text></view>
+        <view class="hl-item hl-yi">宜：{{huangli.yi}}</view>
+        <view class="hl-item hl-ji">忌：{{huangli.ji}}</view>
+      </view>
     </view>
 
     <view class="scroll-card gua-card" wx:if="{{gua}}">
-      <view class="gua-symbol">{{gua.symbol}}</view>
-      <view class="gua-name">{{gua.name}}</view>
-      <view class="gua-meta"><text class="wx">五行属{{gua.wuxing}}</text><text class="dir">利{{gua.direction}}方</text></view>
-      <view class="qianwen">「{{gua.qianwen}}」</view>
-      <view class="jieqian">{{gua.jieqian}}</view>
-      <view class="food-hint">🍽 {{gua.foodHint}}</view>
+      <view class="scroll-inner">
+        <view class="gua-symbol">{{gua.symbol}}</view>
+        <view class="gua-name">{{gua.name}}</view>
+        <view class="gua-meta"><text class="wx">五行属{{gua.wuxing}}</text><text class="dir">利{{gua.direction}}方</text></view>
+        <view class="qianwen">「{{gua.qianwen}}」</view>
+        <view class="jieqian">{{gua.jieqian}}</view>
+        <view class="food-hint">🍽 {{gua.foodHint}}</view>
+      </view>
     </view>
 
     <view class="scroll-card restaurant-card" wx:if="{{rest}}">
       <view class="seal"><text>今日宜吃</text></view>
-      <view class="rc-label">贫道为你寻得——</view>
-      <view class="rc-name">{{rest.name}}</view>
-      <view class="rc-tags">
-        <text class="rc-tag">{{rest.grpLabel}}</text>
-        <text class="rc-tag jade">人均约¥{{rest.price}}</text>
-        <text class="rc-tag gold">{{rest.distText}}</text>
+      <view class="scroll-inner">
+        <view class="rc-label">贫道为你寻得——</view>
+        <view class="rc-name">{{rest.name}}</view>
+        <view class="rc-tags">
+          <text class="rc-tag">{{rest.grpLabel}}</text>
+          <text class="rc-tag jade">人均约¥{{rest.price}}</text>
+          <text class="rc-tag gold">{{rest.distText}}</text>
+        </view>
+        <view class="rc-addr">📍 {{rest.address}}{{rest.phone ? '  📞 ' + rest.phone : ''}}</view>
       </view>
-      <view class="rc-addr">📍 {{rest.address}}{{rest.phone ? '  📞 ' + rest.phone : ''}}</view>
     </view>
 
     <view class="result-actions" wx:if="{{rest}}">

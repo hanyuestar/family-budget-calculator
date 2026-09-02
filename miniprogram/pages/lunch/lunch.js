@@ -39,14 +39,72 @@ Page({
       setTimeout(function () { that.doFortune() }, 700)
       return
     }
+    this._authorizeLocation()
+  },
+
+  // 隐私授权（新版微信真机强校验：未通过隐私授权会拦截 getLocation；开发工具不校验故表现正常）
+  _authorizeLocation: function () {
+    var that = this
+    var proceed = function () { that._ensureLocationPermission() }
+    if (wx.getPrivacySetting) {
+      wx.getPrivacySetting({
+        success: function (res) {
+          if (res && res.needAuthorization && wx.requirePrivacyAuthorize) {
+            wx.requirePrivacyAuthorize({ success: proceed, fail: proceed })
+          } else { proceed() }
+        },
+        fail: proceed
+      })
+    } else if (wx.requirePrivacyAuthorize) {
+      wx.requirePrivacyAuthorize({ success: proceed, fail: proceed })
+    } else { proceed() }
+  },
+
+  // 检查地理位置授权状态：已拒绝则引导去设置页重新授权，否则直接取定位
+  _ensureLocationPermission: function () {
+    var that = this
+    if (wx.getSetting) {
+      wx.getSetting({
+        success: function (res) {
+          var auth = res.authSetting && res.authSetting['scope.userLocation']
+          if (auth === false) {
+            wx.showModal({
+              title: '需要定位权限',
+              content: '请在设置中开启「地理位置」权限，贫道方能感知你的方位',
+              confirmText: '去设置', cancelText: '返回',
+              success: function (m) {
+                if (m.confirm) {
+                  wx.openSetting({
+                    success: function () { that._doGetLocation() },
+                    fail: function () { that.setData({ screen: 'denied' }) }
+                  })
+                } else { that.setData({ screen: 'denied' }) }
+              }
+            })
+          } else { that._doGetLocation() }
+        },
+        fail: function () { that._doGetLocation() }
+      })
+    } else { that._doGetLocation() }
+  },
+
+  _doGetLocation: function () {
+    var that = this
     wx.getLocation({
       type: 'wgs84',
       success: function (res) {
         that._loc = { lat: res.latitude, lng: res.longitude }
         that.doFortune()
       },
-      fail: function () {
-        that.setData({ screen: 'denied' })
+      fail: function (err) {
+        var msg = (err && err.errMsg) || ''
+        // auth/deny/privacy 类错误 → 方位之术被拒；其余（系统定位关闭等）提示后进入 denied
+        if (/auth|deny|permission|privacy/i.test(msg)) {
+          that.setData({ screen: 'denied' })
+        } else {
+          wx.showToast({ title: '定位失败，请确认已开启系统定位', icon: 'none' })
+          that.setData({ screen: 'denied' })
+        }
       }
     })
   },

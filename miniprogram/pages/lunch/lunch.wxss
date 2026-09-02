@@ -171,6 +171,7 @@
   border-radius: 4rpx;
   box-shadow: 0 6rpx 28rpx rgba(42, 31, 20, 0.1), inset 0 0 50rpx rgba(160, 128, 80, 0.05);
   color: #2a1f14;
+  overflow-wrap: anywhere;
 }
 .scroll-card::before, .scroll-card::after {
   content: "";
