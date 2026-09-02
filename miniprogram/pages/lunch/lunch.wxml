@@ -1,0 +1,98 @@
+<!-- pages/lunch/lunch.wxml - 中午吃什么（老道士算卦·今日吃什么） -->
+<view class="container {{isDark ? 'is-dark' : ''}}" style="background-color: {{isDark ? '#1a1a2e' : '#f0e8d8'}}">
+
+  <!-- 迎宾 -->
+  <view class="screen" wx:if="{{screen === 'welcome'}}">
+    <image class="daoist-img" src="https://aka.doubaocdn.com/s/VJGId80kom" mode="aspectFit"></image>
+    <view class="welcome-title">今日吃<text class="cinnabar">什么</text></view>
+    <view class="welcome-sub">
+      <view>施主留步——</view>
+      <view>贫道云游至此，观你面相</view>
+      <view>似有三餐不定之扰</view>
+      <view>且让贫道为你算上一卦</view>
+    </view>
+    <view class="divider-ink"><text class="seal-small">道</text></view>
+    <button class="btn-fortune" bindtap="startFortune">算 一 卦</button>
+    <view class="welcome-footer">老道士算卦 · 信则灵 · 不信则当一乐</view>
+  </view>
+
+  <!-- 推演中 -->
+  <view class="screen" wx:if="{{screen === 'loading'}}">
+    <view class="taiji-spin">☯</view>
+    <view class="loading-text">{{loadingText}}</view>
+    <view class="loading-hint">掐指推演中…</view>
+  </view>
+
+  <!-- 结果 -->
+  <view class="screen result" wx:if="{{screen === 'result'}}">
+    <view class="result-header">
+      <view class="back-btn" bindtap="goWelcome">‹</view>
+      <view class="result-title">卦 象 已 现</view>
+    </view>
+
+    <view class="scroll-card huangli-bar" wx:if="{{huangli}}">
+      <view class="hl-item"><text class="strong">{{huangli.date}}</text> {{huangli.week}}</view>
+      <view class="hl-item">{{huangli.yearGZ}} <text class="strong">{{huangli.dayGZ}}</text></view>
+      <view class="hl-item">五行：<text class="strong">{{huangli.wuxing}}</text></view>
+      <view class="hl-item hl-yi">宜：{{huangli.yi}}</view>
+      <view class="hl-item hl-ji">忌：{{huangli.ji}}</view>
+    </view>
+
+    <view class="scroll-card gua-card" wx:if="{{gua}}">
+      <view class="gua-symbol">{{gua.symbol}}</view>
+      <view class="gua-name">{{gua.name}}</view>
+      <view class="gua-meta"><text class="wx">五行属{{gua.wuxing}}</text><text class="dir">利{{gua.direction}}方</text></view>
+      <view class="qianwen">「{{gua.qianwen}}」</view>
+      <view class="jieqian">{{gua.jieqian}}</view>
+      <view class="food-hint">🍽 {{gua.foodHint}}</view>
+    </view>
+
+    <view class="scroll-card restaurant-card" wx:if="{{rest}}">
+      <view class="seal"><text>今日宜吃</text></view>
+      <view class="rc-label">贫道为你寻得——</view>
+      <view class="rc-name">{{rest.name}}</view>
+      <view class="rc-tags">
+        <text class="rc-tag">{{rest.grpLabel}}</text>
+        <text class="rc-tag jade">人均约¥{{rest.price}}</text>
+        <text class="rc-tag gold">{{rest.distText}}</text>
+      </view>
+      <view class="rc-addr">📍 {{rest.address}}{{rest.phone ? '  📞 ' + rest.phone : ''}}</view>
+    </view>
+
+    <view class="result-actions" wx:if="{{rest}}">
+      <button class="btn-secondary" bindtap="refortune">再 算 一 卦</button>
+      <button class="btn-primary" bindtap="confirmChoice">就 选 这 家</button>
+    </view>
+    <view class="result-actions" wx:if="{{!rest}}">
+      <button class="btn-secondary" bindtap="refortune">再 算 一 卦</button>
+    </view>
+
+    <view class="result-footer">老道士算卦 · 贫道只负责算 · 吃不吃在你</view>
+
+    <view class="footer-bar">
+      <button class="btn-home" bindtap="goHome">首页</button>
+      <button class="btn-share" open-type="share">分享</button>
+      <button class="btn-save" bindtap="saveResult" disabled="{{isSaving}}">保存</button>
+    </view>
+    <view class="ad-banner-wrap">
+      <ad unit-id="adunit-banner-lunch-001" ad-type="banner" ad-theme="white"></ad>
+    </view>
+  </view>
+
+  <!-- 定位被拒 -->
+  <view class="screen" wx:if="{{screen === 'denied'}}">
+    <view class="denied-icon">☯</view>
+    <view class="denied-text">施主拒绝了方位之术，贫道感应不到你的所在，这卦……算不得啊。</view>
+    <button class="btn-fortune" bindtap="goWelcome">回 去 吧</button>
+  </view>
+
+  <!-- 附近无匹配餐厅 -->
+  <view class="screen" wx:if="{{screen === 'norest'}}">
+    <view class="denied-icon">☷</view>
+    <view class="denied-text">贫道推演再三，这方圆十里之内……竟无一家与施主卦象相合的食肆。不如换个方位，再试一卦？</view>
+    <button class="btn-fortune" bindtap="goWelcome">回 去 吧</button>
+  </view>
+
+  <!-- 隐藏出图画布（saveResultTemplate 依赖 #saveCanvas）-->
+  <canvas type="2d" id="saveCanvas" class="save-canvas"></canvas>
+</view>

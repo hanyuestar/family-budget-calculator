@@ -9,7 +9,7 @@
 - **插屏广告**：仅在返回首页时弹出，每 5 分钟最多 1 次，不频繁骚扰
 - **不接入激励视频**：计算工具类不适合，会打断计算流程
 
-## 广告位分布（共 8 个：7 Banner + 1 插屏）
+## 广告位分布（共 9 个：8 Banner + 1 插屏）
 
 | 页面 | 广告位 | 类型 | 位置 | 占位ID |
 |------|--------|------|------|--------|
@@ -17,6 +17,7 @@
 | 支出计算 | Banner | 固定底部 | 页面最底部 | adunit-banner-index-001 |
 | 财富层级 | Banner | 固定底部 | 页面最底部 | adunit-banner-wealth-001 |
 | 财富健康指数 | Banner | 固定底部 | 页面最底部 | adunit-banner-wealthhealth-001 |
+| 中午吃什么 | Banner | 固定底部 | 页面最底部 | adunit-banner-lunch-001 |
 | BMI | Banner | 固定底部 | 页面最底部 | adunit-banner-bmi-001 |
 | 时光进度条 | Banner | 固定底部 | 页面最底部 | adunit-banner-progress-001 |
 | 亲戚关系 | Banner | 固定底部 | 页面最底部 | adunit-banner-relation-001 |
@@ -35,6 +36,7 @@
 - `pages/bmi/bmi.wxml` — 底部固定 Banner `bmi-001`
 - `pages/progress/progress.wxml` — 底部固定 Banner `progress-001`
 - `pages/relation/relation.wxml` — 底部固定 Banner `relation-001`
+- `pages/lunch/lunch.wxml` — 底部固定 Banner `lunch-001`
 - 各工具页 `goHome`（来自 `behaviors/calc-page.js`）调用 `app.showInterstitial` 触发插屏
 
 ## 上线后替换步骤
@@ -49,5 +51,6 @@
    - `adunit-banner-bmi-001` → BMI Banner 真实 ID
    - `adunit-banner-progress-001` → 时光进度条 Banner 真实 ID
    - `adunit-banner-relation-001` → 亲戚关系 Banner 真实 ID
+   - `adunit-banner-lunch-001` → 中午吃什么 Banner 真实 ID
    - `adunit-xxxxxxxxxxxxxxxx` → 插屏广告真实 ID
 4. 重新上传代码 → 提交审核 → 发布

@@ -33,6 +33,14 @@ module.exports = {
       hot: true
     },
     {
+      id: 'lunch',
+      icon: '🍜',
+      name: '中午吃什么',
+      desc: '不知道吃啥？让老道士结合黄历卦象算一卦',
+      path: '/pages/lunch/lunch',
+      hot: true
+    },
+    {
       id: 'relation',
       icon: '👪',
       name: '亲戚关系',

@@ -5,6 +5,7 @@
     "pages/index/index",
     "pages/wealth/wealth",
     "pages/wealth-health/wealth-health",
+    "pages/lunch/lunch",
     "pages/bmi/bmi",
     "pages/progress/progress",
     "pages/relation/relation"
