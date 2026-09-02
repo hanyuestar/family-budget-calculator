@@ -46,6 +46,8 @@ var wxMock = {
   navigateTo: function (o) { navigateCalls.push(o) },
   navigateBack: function () {},
   redirectTo: function () {},
+  getLocation: function () {},
+  request: function () {},
   canvasToTempFilePath: function (o) { exportCalls++; if (o && o.success) o.success({ tempFilePath: 'tmp://x' }) },
   saveImageToPhotosAlbum: function (o) { saveAlbumCalls++; if (o && o.success) o.success() },
   createCanvasContext: function () { return makeCanvasCtx() },
@@ -580,6 +582,105 @@ function runInfra() {
   record(!threwPie3, 'drawPie 画布节点缺失不抛错（静默降级）')
 }
 
+// ============ 中午吃什么（定位 + 取餐厅 + 按钮点击模拟）============
+async function runLunch() {
+  console.log('\n— 中午吃什么（老道士算卦·今日吃什么）—')
+
+  // 贴近真实返回的餐厅样本（name/location/address/telephone/detail_info.price/tag）
+  function mkPois(n) {
+    var base = { lat: 22.5431, lng: 114.0579 }
+    var names = ['蜀香源川菜馆', '粤味道茶餐厅', '老街面馆', '海记火锅', '城南烧烤', '樱花日料亭', '首尔炸鸡', '西堤牛排馆', '汉堡王(测试店)', '暹罗泰式料理']
+    var tags = ['川菜', '茶餐厅', '面馆', '火锅', '烧烤', '日本料理', '韩国料理', '西餐', '快餐', '东南亚']
+    var pois = []
+    for (var i = 0; i < n; i++) {
+      pois.push({
+        name: names[i % 10],
+        location: { lat: base.lat + 0.001 * (i + 1), lng: base.lng + 0.001 * (i + 1) },
+        address: '测试路' + (i + 1) + '号',
+        telephone: '1380000' + (1000 + i),
+        detail_info: { tag: '美食;' + tags[i % 10], price: String(40 + i * 10), overall_rating: '4.' + (i % 5) }
+      })
+    }
+    return pois
+  }
+  function setBaidu(resultsFn) {
+    wx.request = function (o) { if (o && o.success) o.success({ data: { status: 0, message: 'ok', results: resultsFn(o) } }) }
+  }
+  function setLoc(ok, coord) {
+    wx.getLocation = function (o) {
+      if (ok) { if (o && o.success) o.success({ latitude: coord.lat, longitude: coord.lng }) }
+      else { if (o && o.fail) o.fail({ errMsg: 'getLocation:fail auth deny' }) }
+    }
+  }
+  var SZ = { lat: 22.5431, lng: 114.0579 }
+
+  // 场景1：定位成功 → 算卦 → 取餐厅 → 结果页
+  setLoc(true, SZ); setBaidu(function () { return mkPois(12) })
+  var inst = fresh('pages/lunch/lunch.js')
+  inst.onLoad({}); inst.startFortune()
+  await new Promise(function (r) { realSetTimeout(r, 40) })
+  record(inst.data.screen === 'result', '定位成功→算卦→取餐厅→结果页(result)', 'screen=' + inst.data.screen)
+  record(inst.data.gua && inst.data.gua.name, '结果页含卦象', inst.data.gua && inst.data.gua.name)
+  record(inst.data.rest && inst.data.rest.name, '结果页含推荐餐厅', inst.data.rest && inst.data.rest.name)
+  record(inst.data.huangli && inst.data.huangli.date, '结果页含黄历', inst.data.huangli && inst.data.huangli.date)
+
+  // 未算卦直接保存 → 拦截
+  var instNo = fresh('pages/lunch/lunch.js')
+  toastCalls.length = 0; exportCalls = 0; saveAlbumCalls = 0
+  instNo.saveResult()
+  record(exportCalls === 0 && saveAlbumCalls === 0, '未算卦时保存不触发出图/存相册')
+  record(toastCalls.some(function (t) { return /请先算一卦/.test(t.title || '') }), '未算卦时保存提示「请先算一卦」')
+
+  // 场景2：定位被拒 → denied
+  setLoc(false); setBaidu(function () { return mkPois(12) })
+  var instDeny = fresh('pages/lunch/lunch.js')
+  instDeny.startFortune()
+  record(instDeny.data.screen === 'denied', '定位被拒→denied 屏', 'screen=' + instDeny.data.screen)
+
+  // 场景3：周边无餐厅 → norest
+  setLoc(true, SZ); setBaidu(function () { return [] })
+  var instNoRest = fresh('pages/lunch/lunch.js')
+  instNoRest.startFortune()
+  await new Promise(function (r) { realSetTimeout(r, 40) })
+  record(instNoRest.data.screen === 'norest', '周边无餐厅→norest 屏', 'screen=' + instNoRest.data.screen)
+
+  // 场景4：调试坐标直传（?lat=&lng=）绕过授权
+  setLoc(false); setBaidu(function () { return mkPois(12) })
+  var instDbg = fresh('pages/lunch/lunch.js')
+  instDbg.onLoad({ lat: '22.5431', lng: '114.0579' }); instDbg.startFortune()
+  await new Promise(function (r) { realSetTimeout(r, 40) })
+  record(instDbg.data.screen === 'result', '调试坐标(?lat=&lng=)绕过授权→仍出结果', 'screen=' + instDbg.data.screen)
+
+  // 场景5：按钮点击反馈
+  toastCalls.length = 0
+  inst.confirmChoice()
+  record(toastCalls.some(function (t) { return /就选这家/.test(t.title || '') }), '点击「就选这家」→ toast 反馈')
+
+  inst.goWelcome()
+  record(inst.data.screen === 'welcome' && inst.data.gua === null, '点击返回→welcome 且清空结果')
+
+  setLoc(true, SZ); setBaidu(function () { return mkPois(12) })
+  var inst2 = fresh('pages/lunch/lunch.js')
+  inst2.onLoad({}); inst2.startFortune()
+  await new Promise(function (r) { realSetTimeout(r, 40) })
+  inst2.refortune()
+  await new Promise(function (r) { realSetTimeout(r, 40) })
+  record(inst2.data.screen === 'result', '点击「再算一卦」→ 重新推演并出结果', 'screen=' + inst2.data.screen)
+
+  navigateCalls.length = 0
+  global.getCurrentPages = function () { return [{ route: 'pages/lunch/lunch' }, { route: 'pages/home/home' }] }
+  wx.navigateBack = function () { navigateCalls.push({ back: true }) }
+  var inst3 = fresh('pages/lunch/lunch.js')
+  inst3.goHome()
+  record(navigateCalls.some(function (c) { return c.back }), '点击首页→navigateBack 返回首页')
+
+  // 保存 E2E（已算卦）；午餐无输入可还原(input:undefined)，按设计不写历史，仅出海报
+  var instSave = fresh('pages/lunch/lunch.js')
+  instSave.onLoad({}); instSave.startFortune()
+  await new Promise(function (r) { realSetTimeout(r, 40) })
+  await assertSaveOK(instSave, 'lunch', false)
+}
+
 // ============ 主流程 ============
 ;(async function () {
   await runBmi()
@@ -587,6 +688,7 @@ function runInfra() {
   await runRelation()
   await runExpense()
   await runProgress()
+  await runLunch()
   runInfra()
   global.setTimeout = realSetTimeout
   console.log('\n=== test_all 结果: ' + pass + '/' + (pass + fail) + ' 通过 ===\n')

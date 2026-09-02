@@ -17,6 +17,12 @@
     "backgroundColor": "#f5f7fa"
   },
   "style": "v2",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "你的位置仅用于推荐附近餐厅，不会上传服务器"
+    }
+  },
+  "requiredPrivateInfos": ["getLocation"],
   "sitemapLocation": "sitemap.json",
   "subPackages": [
     {
