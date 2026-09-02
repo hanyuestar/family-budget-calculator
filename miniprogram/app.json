@@ -18,11 +18,11 @@
   },
   "style": "v2",
   "permission": {
-    "scope.userLocation": {
-      "desc": "你的位置仅用于推荐附近餐厅，不会上传服务器"
+    "scope.userFuzzyLocation": {
+      "desc": "你的模糊位置仅用于推荐附近餐厅，不会上传服务器"
     }
   },
-  "requiredPrivateInfos": ["getLocation"],
+  "requiredPrivateInfos": ["getFuzzyLocation"],
   "sitemapLocation": "sitemap.json",
   "subPackages": [
     {

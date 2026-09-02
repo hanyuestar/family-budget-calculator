@@ -47,6 +47,7 @@ var wxMock = {
   navigateBack: function () {},
   redirectTo: function () {},
   getLocation: function () {},
+  getFuzzyLocation: function () {},
   request: function () {},
   canvasToTempFilePath: function (o) { exportCalls++; if (o && o.success) o.success({ tempFilePath: 'tmp://x' }) },
   saveImageToPhotosAlbum: function (o) { saveAlbumCalls++; if (o && o.success) o.success() },
@@ -607,10 +608,13 @@ async function runLunch() {
     wx.request = function (o) { if (o && o.success) o.success({ data: { status: 0, message: 'ok', results: resultsFn(o) } }) }
   }
   function setLoc(ok, coord) {
-    wx.getLocation = function (o) {
+    var fn = function (o) {
       if (ok) { if (o && o.success) o.success({ latitude: coord.lat, longitude: coord.lng }) }
-      else { if (o && o.fail) o.fail({ errMsg: 'getLocation:fail auth deny' }) }
+      else { if (o && o.fail) o.fail({ errMsg: 'getFuzzyLocation:fail auth deny' }) }
     }
+    // 生产代码已切到 getFuzzyLocation（getLocation 受类目限制无法开通）；两接口同形，一并注入 mock
+    wx.getLocation = fn
+    wx.getFuzzyLocation = fn
   }
   var SZ = { lat: 22.5431, lng: 114.0579 }
 

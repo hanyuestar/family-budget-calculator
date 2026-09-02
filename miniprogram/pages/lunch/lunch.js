@@ -42,7 +42,7 @@ Page({
     this._authorizeLocation()
   },
 
-  // 隐私授权（新版微信真机强校验：未通过隐私授权会拦截 getLocation；开发工具不校验故表现正常）
+  // 隐私授权（新版微信真机强校验：未通过隐私授权会拦截地理位置接口；开发工具不校验故表现正常）
   _authorizeLocation: function () {
     var that = this
     var proceed = function () { that._ensureLocationPermission() }
@@ -60,17 +60,17 @@ Page({
     } else { proceed() }
   },
 
-  // 检查地理位置授权状态：已拒绝则引导去设置页重新授权，否则直接取定位
+  // 检查模糊地理位置授权状态：已拒绝则引导去设置页重新授权，否则直接取定位
   _ensureLocationPermission: function () {
     var that = this
     if (wx.getSetting) {
       wx.getSetting({
         success: function (res) {
-          var auth = res.authSetting && res.authSetting['scope.userLocation']
+          var auth = res.authSetting && res.authSetting['scope.userFuzzyLocation']
           if (auth === false) {
             wx.showModal({
               title: '需要定位权限',
-              content: '请在设置中开启「地理位置」权限，贫道方能感知你的方位',
+              content: '请在设置中开启「模糊位置」权限，贫道方能感知你的方位',
               confirmText: '去设置', cancelText: '返回',
               success: function (m) {
                 if (m.confirm) {
@@ -90,7 +90,9 @@ Page({
 
   _doGetLocation: function () {
     var that = this
-    wx.getLocation({
+    // getLocation（精确位置）受服务类目限制无法开通，改用 getFuzzyLocation（模糊位置，免类目审核、自动通过）。
+    // 返回 wgs84，与 utils/lunch.js 的 wgs2bd 转换链完全兼容，逻辑层无需改动。
+    wx.getFuzzyLocation({
       type: 'wgs84',
       success: function (res) {
         that._loc = { lat: res.latitude, lng: res.longitude }
