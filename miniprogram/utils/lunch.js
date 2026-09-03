@@ -169,62 +169,81 @@ function placeSearch(query, lat, lng, radius, pageNum) {
   })
 }
 
-function fetchRests(lat, lng, tk, bk) {
+// 会话级餐厅缓存：同一坐标（约 55m 精度）在单次会话内只检索一次百度。
+// 「再算一卦」/ 卦象切换 命中缓存即零新增请求，大幅降低 API 成本（原每次 14×5 爆发调用）。
+// 仅缓存成功结果（ok:true）；检索失败（域名拦截 / AK 错误）不缓存，以便「再算一卦」可重试。
+var _restCache = {}
+function _cacheKeyOf(bd) {
+  // round 到 1/2000 度 ≈ 55m，规避 GPS 抖动造成的 key 漂移导致缓存击穿
+  return Math.round(bd.lat * 2000) / 2000 + ',' + Math.round(bd.lng * 2000) / 2000
+}
+function clearRestCache() { _restCache = {} }
+
+// 合并查询：单次大半径 query=美食 + 分页（最多 3 页=60 条），替代原 14 关键词×5 半径的爆发调用。
+// 菜系归类仍由本地 classify() 按店名打标，保留卦象 tasteKeys 匹配能力；isSingle/isDrink/距离/默认价 全部沿用。
+function mergedSearch(bd) {
   return new Promise(function (resolve) {
-    var bd = wgs2bd(lat, lng)
+    var QUERY = '美食'
+    var RADIUS = 5000
+    var MAX_PAGES = 3
     var allPois = {}
-    var netErr = null           // 记录首个检索失败原因（域名拦截 / 百度错误）
-    var KWS = ['美食', '快餐', '小吃', '川菜', '湘菜', '粤菜', '火锅', '烧烤', '面馆', '日料', '韩餐', '西餐', '汉堡', '东南亚']
-    var RADII = [500, 1000, 2000, 3000, 5000]
-    function searchRadius(idx) {
-      if (idx >= RADII.length) { finish(); return }
-      var radius = RADII[idx]
-      var promises = KWS.map(function (kw) {
-        return placeSearch(kw, bd.lat, bd.lng, radius, 0).then(function (data) {
-          if (data && data.err) { if (!netErr) netErr = data; return }
-          if (data && data.results && data.results.length) {
-            data.results.forEach(function (p) {
-              if (p.name && p.location) {
-                var key = p.name + '_' + p.location.lat.toFixed(4) + '_' + p.location.lng.toFixed(4)
-                if (!allPois[key]) {
-                  var d = haversine(bd.lat, bd.lng, p.location.lat, p.location.lng)
-                  allPois[key] = {
-                    name: p.name, address: p.address || '', dist: d, telephone: p.telephone || '',
-                    tag: p.detail_info && p.detail_info.tag ? p.detail_info.tag : '',
-                    price: p.detail_info && p.detail_info.price ? p.detail_info.price : null,
-                    rating: p.detail_info && p.detail_info.overall_rating ? p.detail_info.overall_rating : null
-                  }
-                }
-              }
-            })
-          }
-        })
-      })
-      Promise.all(promises).then(function () {
-        var cnt = 0
-        for (var k in allPois) {
-          var p = allPois[k]
-          if (p.dist <= radius && isSingle(p.name) && !isDrink(p.name)) cnt++
-        }
-        if (cnt >= 8) finish(); else searchRadius(idx + 1)
-      })
+    var netErr = null
+    var page = 0
+    function build(p) {
+      if (!p || !p.name || !p.location) return
+      var key = p.name + '_' + p.location.lat.toFixed(4) + '_' + p.location.lng.toFixed(4)
+      if (allPois[key]) return
+      allPois[key] = {
+        name: p.name, address: p.address || '', dist: haversine(bd.lat, bd.lng, p.location.lat, p.location.lng),
+        telephone: p.telephone || '',
+        tag: p.detail_info && p.detail_info.tag ? p.detail_info.tag : '',
+        price: p.detail_info && p.detail_info.price ? p.detail_info.price : null,
+        rating: p.detail_info && p.detail_info.overall_rating ? p.detail_info.overall_rating : null
+      }
     }
     function finish() {
       var rests = []
       for (var k in allPois) {
         var p = allPois[k]
         if (!isSingle(p.name) || isDrink(p.name)) continue
-        if (p.dist > 5000) continue
+        if (p.dist > RADIUS) continue
         var grp = classify(p.name, p.address)
         var price = p.price || GD[grp] || 45
         rests.push({ name: p.name, grp: grp, price: price, dist: p.dist, address: p.address, phone: p.telephone, rating: p.rating, tag: p.tag })
       }
       rests.sort(function (a, b) { return (a.dist || 99999) - (b.dist || 99999) })
-      // 若一次都没检索到且存在检索失败，则透出错误（区分「真无餐厅」与「接口被拦」）
+      // 一次都没检索到且存在检索失败 → 透出错误（区分「真无餐厅」与「接口被拦」）
       if (rests.length === 0 && netErr) { resolve({ ok: false, err: netErr }); return }
       resolve({ ok: true, rests: rests })
     }
-    searchRadius(0)
+    function doPage() {
+      if (page >= MAX_PAGES) return finish()
+      placeSearch(QUERY, bd.lat, bd.lng, RADIUS, page).then(function (data) {
+        if (data && data.err) {
+          if (!netErr) netErr = data
+          // 合并查询遇首个失败即透出，不再继续分页（错误不会变多）
+          return resolve({ ok: false, err: netErr })
+        }
+        if (data && data.results) data.results.forEach(build)
+        // 本页满载 20 且未达页数上限 → 翻下一页；否则结束
+        if (data && data.results && data.results.length >= 20 && page < MAX_PAGES - 1) { page++; doPage() }
+        else finish()
+      })
+    }
+    doPage()
+  })
+}
+
+function fetchRests(lat, lng, tk, bk) {
+  // tk / bk（卦象 tasteKeys / budgetKey）不参与门店检索——菜系匹配在 pickRest 完成，故缓存仅按坐标即可。
+  return new Promise(function (resolve) {
+    var bd = wgs2bd(lat, lng)
+    var ck = _cacheKeyOf(bd)
+    if (_restCache[ck]) { resolve(_restCache[ck]); return }
+    mergedSearch(bd).then(function (out) {
+      if (out.ok) _restCache[ck] = out
+      resolve(out)
+    })
   })
 }
 
@@ -312,5 +331,6 @@ module.exports = {
   calculateGua: calculateGua,
   classify: classify,
   isSingle: isSingle,
-  packHuangli: packHuangli
+  packHuangli: packHuangli,
+  clearRestCache: clearRestCache
 }

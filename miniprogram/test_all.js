@@ -603,8 +603,10 @@ async function runLunch() {
     }
     return pois
   }
+  var baiduCalls = 0   // 百度 place API 实际请求次数（验证降本：合并查询后单次算卦仅 1~3 次）
+  var lunchLogic = require('./utils/lunch.js')  // 复用页面同一模块实例，便于清会话缓存做场景隔离
   function setBaidu(resultsFn) {
-    wx.request = function (o) { if (o && o.success) o.success({ data: { status: 0, message: 'ok', results: resultsFn(o) } }) }
+    wx.request = function (o) { baiduCalls++; if (o && o.success) o.success({ data: { status: 0, message: 'ok', results: resultsFn(o) } }) }
   }
   function setLoc(ok, coord) {
     var fn = function (o) {
@@ -639,7 +641,8 @@ async function runLunch() {
   instDeny.startFortune()
   record(instDeny.data.screen === 'denied', '定位被拒→denied 屏', 'screen=' + instDeny.data.screen)
 
-  // 场景3：周边无餐厅 → norest
+  // 场景3：周边无餐厅 → norest（先清缓存，避免命中场景1的成功结果，真实走空检索路径）
+  lunchLogic.clearRestCache()
   setLoc(true, SZ); setBaidu(function () { return [] })
   var instNoRest = fresh('pages/lunch/lunch.js')
   instNoRest.startFortune()
@@ -647,6 +650,7 @@ async function runLunch() {
   record(instNoRest.data.screen === 'norest', '周边无餐厅→norest 屏', 'screen=' + instNoRest.data.screen)
 
   // 场景3b：检索接口被微信拦截（正式版未配 request 合法域名 api.map.baidu.com）→ neterr 屏（不再静默当「无餐厅」）
+  lunchLogic.clearRestCache()
   setLoc(true, SZ)
   wx.request = function (o) { if (o && o.fail) o.fail({ errMsg: 'request:fail url not in domain list https://api.map.baidu.com/place/v2/search' }) }
   var instNet = fresh('pages/lunch/lunch.js')
@@ -657,6 +661,7 @@ async function runLunch() {
   setBaidu(function () { return mkPois(12) }) // 复位 wx.request，避免影响后续用例
 
   // 场景3c：百度返回非 0（AK/配额/IP 白名单错误）→ neterr 屏，提示百度错误
+  lunchLogic.clearRestCache()
   setLoc(true, SZ)
   wx.request = function (o) { if (o && o.success) o.success({ data: { status: 200, message: 'APP 服务被禁用' } }) }
   var instBaidu = fresh('pages/lunch/lunch.js')
@@ -701,6 +706,35 @@ async function runLunch() {
   instSave.onLoad({}); instSave.startFortune()
   await new Promise(function (r) { realSetTimeout(r, 40) })
   await assertSaveOK(instSave, 'lunch', false)
+
+  // 场景6：降本验证 —— 合并查询（单次大半径美食 + 分页）+ 会话缓存（同坐标再算零新增）
+  // 先清缓存与计数，确保本场景首算是真实缓存未命中
+  var lunchLogic = require('./utils/lunch.js')
+  lunchLogic.clearRestCache(); baiduCalls = 0
+  setLoc(true, SZ); setBaidu(function () { return mkPois(12) })
+  var instCost = fresh('pages/lunch/lunch.js')
+  instCost.onLoad({}); instCost.startFortune()
+  await new Promise(function (r) { realSetTimeout(r, 40) })
+  record(instCost.data.screen === 'result', '场景6a: 合并查询→单次算卦出结果页', 'screen=' + instCost.data.screen)
+  // 12 条样本 < 每页上限 20，仅触发 1 次百度请求（原为 14 关键词×5 半径=最多 70 次）
+  record(baiduCalls === 1, '场景6b: 单次算卦仅 1 次百度请求（合并查询，原为最多 70 次）', 'calls=' + baiduCalls)
+  // 同坐标「再算一卦」→ 命中会话缓存 → 百度请求零新增
+  var callsBeforeRefortune = baiduCalls
+  instCost.refortune()
+  await new Promise(function (r) { realSetTimeout(r, 40) })
+  record(instCost.data.screen === 'result', '场景6c: 同坐标再算一卦仍出结果', 'screen=' + instCost.data.screen)
+  record(baiduCalls === callsBeforeRefortune, '场景6d: 同坐标再算一卦命中会话缓存，百度请求零新增（原会再发最多 70 次）', 'calls=' + baiduCalls)
+
+  // 场景7：合并查询后归类与卦象匹配不变（降本未丢菜系多样性）
+  lunchLogic.clearRestCache(); baiduCalls = 0
+  setLoc(true, SZ); setBaidu(function () { return mkPois(12) })
+  var frCost = await lunchLogic.fortune(SZ)
+  record(frCost && !frCost.err && frCost.rest && frCost.rest.name, '场景7a: 合并查询下 fortune 正常返回推荐餐厅', frCost && frCost.rest && frCost.rest.name)
+  // classify 对样本店名的归类在降本后必须保持一致（12 菜系映射未动）
+  var sampleNames = ['蜀香源川菜馆', '粤味道茶餐厅', '老街面馆', '海记火锅', '城南烧烤', '樱花日料亭', '首尔炸鸡', '西堤牛排馆', '汉堡王(测试店)', '暹罗泰式料理']
+  var expectGrps = ['chuanxiang', 'yue', 'noodle', 'hotpot', 'bbq', 'jp', 'kr', 'west', 'burger', 'sea']
+  var clsAllOk = sampleNames.every(function (n, i) { return lunchLogic.classify(n, '') === expectGrps[i] })
+  record(clsAllOk, '场景7b: 合并查询后 classify 仍按店名正确归类 12 菜系', clsAllOk ? 'ok' : 'mismatch')
 }
 
 // ============ 主流程 ============
