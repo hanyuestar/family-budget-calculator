@@ -414,6 +414,21 @@
   word-break: break-all;
 }
 .container.is-dark .loc-err { color: #e08a8a; background: rgba(160, 40, 40, 0.1); }
+.net-err {
+  font-size: 23rpx;
+  color: #7a1818;
+  line-height: 1.8;
+  letter-spacing: 1rpx;
+  margin: -12rpx 0 40rpx;
+  padding: 20rpx 22rpx;
+  max-width: 660rpx;
+  text-align: left;
+  background: rgba(160, 40, 40, 0.05);
+  border: 2rpx solid rgba(160, 40, 40, 0.35);
+  border-radius: 6rpx;
+  word-break: break-all;
+}
+.container.is-dark .net-err { color: #f0b0b0; background: rgba(160, 40, 40, 0.12); border-color: rgba(224, 138, 138, 0.45); }
 
 /* ===== 暗色适配 ===== */
 .container.is-dark .welcome-title,

@@ -137,6 +137,9 @@ function classify(name, addr) {
 }
 
 // placeSearch：小程序用 wx.request 替代 JSONP（output=json）
+// 关键：失败必须透出原因，否则会被上层静默当成「附近无餐厅」，用户完全看不到真实报错。
+//   - 微信层拦截（最常见=正式版未配 request 合法域名 api.map.baidu.com）→ { err:'network' }
+//   - 百度返回非 0（AK 校验失败 / 配额 / IP 白名单）→ { err:'baidu', status, msg }
 function placeSearch(query, lat, lng, radius, pageNum) {
   return new Promise(function (resolve) {
     wx.request({
@@ -151,8 +154,17 @@ function placeSearch(query, lat, lng, radius, pageNum) {
         page_num: pageNum || 0,
         scope: 2
       },
-      success: function (res) { resolve(res && res.data ? res.data : null) },
-      fail: function () { resolve(null) }
+      success: function (res) {
+        var d = res && res.data
+        if (!d || d.status !== 0) {
+          resolve({ err: 'baidu', status: d && d.status, msg: (d && d.message) || '未知百度错误' })
+        } else {
+          resolve(d)
+        }
+      },
+      fail: function (e) {
+        resolve({ err: 'network', raw: (e && e.errMsg) || 'wx.request 失败' })
+      }
     })
   })
 }
@@ -161,6 +173,7 @@ function fetchRests(lat, lng, tk, bk) {
   return new Promise(function (resolve) {
     var bd = wgs2bd(lat, lng)
     var allPois = {}
+    var netErr = null           // 记录首个检索失败原因（域名拦截 / 百度错误）
     var KWS = ['美食', '快餐', '小吃', '川菜', '湘菜', '粤菜', '火锅', '烧烤', '面馆', '日料', '韩餐', '西餐', '汉堡', '东南亚']
     var RADII = [500, 1000, 2000, 3000, 5000]
     function searchRadius(idx) {
@@ -168,6 +181,7 @@ function fetchRests(lat, lng, tk, bk) {
       var radius = RADII[idx]
       var promises = KWS.map(function (kw) {
         return placeSearch(kw, bd.lat, bd.lng, radius, 0).then(function (data) {
+          if (data && data.err) { if (!netErr) netErr = data; return }
           if (data && data.results && data.results.length) {
             data.results.forEach(function (p) {
               if (p.name && p.location) {
@@ -206,7 +220,9 @@ function fetchRests(lat, lng, tk, bk) {
         rests.push({ name: p.name, grp: grp, price: price, dist: p.dist, address: p.address, phone: p.telephone, rating: p.rating, tag: p.tag })
       }
       rests.sort(function (a, b) { return (a.dist || 99999) - (b.dist || 99999) })
-      resolve(rests)
+      // 若一次都没检索到且存在检索失败，则透出错误（区分「真无餐厅」与「接口被拦」）
+      if (rests.length === 0 && netErr) { resolve({ ok: false, err: netErr }); return }
+      resolve({ ok: true, rests: rests })
     }
     searchRadius(0)
   })
@@ -261,16 +277,20 @@ function packHuangli() {
 }
 
 // 编排：算卦 + 检索 + 选店，返回展示就绪对象
+// 注意：fetchRests 现返回 { ok, rests } 或 { ok:false, err }；检索失败(域名拦截/AK错误)直接透出 err。
 function fortune(userLoc) {
   return new Promise(function (resolve) {
     var gua = calculateGua(userLoc.lat, userLoc.lng)
-    fetchRests(userLoc.lat, userLoc.lng, gua.tasteKeys, gua.budgetKey).then(function (rests) {
+    fetchRests(userLoc.lat, userLoc.lng, gua.tasteKeys, gua.budgetKey).then(function (fr) {
+      if (!fr.ok) { resolve({ gua: packGua(gua), err: fr.err, huangli: packHuangli() }); return }
+      var rests = fr.rests
       if (!rests || rests.length === 0) {
-        fetchRests(userLoc.lat, userLoc.lng, ['any'], 'pursuit').then(function (r2) {
-          if (!r2 || r2.length === 0) {
+        fetchRests(userLoc.lat, userLoc.lng, ['any'], 'pursuit').then(function (fr2) {
+          if (!fr2.ok) { resolve({ gua: packGua(gua), err: fr2.err, huangli: packHuangli() }); return }
+          if (!fr2.rests || fr2.rests.length === 0) {
             resolve({ gua: packGua(gua), rest: null, huangli: packHuangli(), noRest: true })
           } else {
-            var rest = pickRest(r2, gua)
+            var rest = pickRest(fr2.rests, gua)
             resolve({ gua: packGua(gua), rest: packRest(rest), huangli: packHuangli(), noRest: false })
           }
         })

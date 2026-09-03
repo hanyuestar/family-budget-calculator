@@ -21,7 +21,8 @@ Page({
     huangli: null,
     isSaving: false,
     share: { ready: true, title: '今日吃什么？让老道士为你算一卦', path: '/pages/lunch/lunch' },
-    locErr: ''
+    locErr: '',
+    netErr: ''
   },
 
   onLoad: function (options) {
@@ -126,6 +127,11 @@ Page({
       clearInterval(iv)
       if (!that._loc) { that.setData({ screen: 'denied' }); return }
       lunch.fortune(that._loc).then(function (r) {
+        if (r.err) {
+          // 检索失败（域名未配 / 百度 AK 错误）显式暴露，不再静默当「无餐厅」
+          that.setData({ screen: 'neterr', gua: r.gua, netErr: errToText(r.err) })
+          return
+        }
         if (r.noRest) {
           that.setData({ screen: 'norest', gua: r.gua })
           return
@@ -147,7 +153,7 @@ Page({
   },
 
   goWelcome: function () {
-    this.setData({ screen: 'welcome', gua: null, rest: null, huangli: null, locErr: '' })
+    this.setData({ screen: 'welcome', gua: null, rest: null, huangli: null, locErr: '', netErr: '' })
   },
 
   saveResult: function () {
@@ -206,4 +212,15 @@ function wrapText(ctx, text, x, y, maxWidth, lh) {
     } else { line = test }
   }
   if (line) ctx.fillText(line, x, y)
+}
+
+// 把检索失败原因翻译成用户可执行的指引
+function errToText(err) {
+  if (err && err.err === 'network') {
+    return '餐厅检索接口被微信拦截：请在小程序管理后台「开发管理 → 开发设置 → 服务器域名 → request 合法域名」添加 https://api.map.baidu.com（开发工具因「不校验合法域名」能跑，正式版必须配）。'
+  }
+  if (err && err.err === 'baidu') {
+    return '百度地图接口返回错误（status:' + (err.status != null ? err.status : '?') + '）：' + (err.msg || '未知') + '。若为 AK 问题，请将 PLACE_AK 改为「微信小程序」类型并绑定本小程序 AppID，或放开 IP 白名单。'
+  }
+  return '餐厅检索失败：' + ((err && (err.raw || err.msg)) || '未知错误')
 }

@@ -93,6 +93,14 @@
     <button class="btn-fortune" bindtap="goWelcome">回 去 吧</button>
   </view>
 
+  <!-- 餐厅检索失败（域名未配 / 百度 AK 错误）-->
+  <view class="screen" wx:if="{{screen === 'neterr'}}">
+    <view class="denied-icon">☷</view>
+    <view class="denied-text">贫道掐指一算，周边食肆本是有的，奈何寻店之术被一道无形的墙挡住了。</view>
+    <view class="net-err" wx:if="{{netErr}}">{{netErr}}</view>
+    <button class="btn-fortune" bindtap="goWelcome">回 去 吧</button>
+  </view>
+
   <!-- 附近无匹配餐厅 -->
   <view class="screen" wx:if="{{screen === 'norest'}}">
     <view class="denied-icon">☷</view>

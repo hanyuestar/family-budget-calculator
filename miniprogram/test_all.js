@@ -646,6 +646,26 @@ async function runLunch() {
   await new Promise(function (r) { realSetTimeout(r, 40) })
   record(instNoRest.data.screen === 'norest', '周边无餐厅→norest 屏', 'screen=' + instNoRest.data.screen)
 
+  // 场景3b：检索接口被微信拦截（正式版未配 request 合法域名 api.map.baidu.com）→ neterr 屏（不再静默当「无餐厅」）
+  setLoc(true, SZ)
+  wx.request = function (o) { if (o && o.fail) o.fail({ errMsg: 'request:fail url not in domain list https://api.map.baidu.com/place/v2/search' }) }
+  var instNet = fresh('pages/lunch/lunch.js')
+  instNet.onLoad({}); instNet.startFortune()
+  await new Promise(function (r) { realSetTimeout(r, 40) })
+  record(instNet.data.screen === 'neterr', '检索接口被微信拦截→neterr 屏（而非静默当无餐厅）', 'screen=' + instNet.data.screen)
+  record(/api\.map\.baidu\.com/.test(instNet.data.netErr || ''), 'neterr 屏显式提示配置 request 合法域名', (instNet.data.netErr || '').slice(0, 24))
+  setBaidu(function () { return mkPois(12) }) // 复位 wx.request，避免影响后续用例
+
+  // 场景3c：百度返回非 0（AK/配额/IP 白名单错误）→ neterr 屏，提示百度错误
+  setLoc(true, SZ)
+  wx.request = function (o) { if (o && o.success) o.success({ data: { status: 200, message: 'APP 服务被禁用' } }) }
+  var instBaidu = fresh('pages/lunch/lunch.js')
+  instBaidu.onLoad({}); instBaidu.startFortune()
+  await new Promise(function (r) { realSetTimeout(r, 40) })
+  record(instBaidu.data.screen === 'neterr', '百度返回非0(status:200)→neterr 屏', 'screen=' + instBaidu.data.screen)
+  record(/status:200/.test(instBaidu.data.netErr || ''), 'neterr 屏提示百度 status:200 错误', (instBaidu.data.netErr || '').slice(0, 24))
+  setBaidu(function () { return mkPois(12) }) // 复位
+
   // 场景4：调试坐标直传（?lat=&lng=）绕过授权
   setLoc(false); setBaidu(function () { return mkPois(12) })
   var instDbg = fresh('pages/lunch/lunch.js')
