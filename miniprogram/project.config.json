@@ -53,7 +53,7 @@
     "disableSWC": true
   },
   "compileType": "miniprogram",
-  "libVersion": "2.19.4",
+  "libVersion": "2.30.0",
   "appid": "touristappid",
   "projectname": "family-budget-calculator",
   "condition": {},

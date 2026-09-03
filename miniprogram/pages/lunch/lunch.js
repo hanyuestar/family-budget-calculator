@@ -20,7 +20,8 @@ Page({
     rest: null,
     huangli: null,
     isSaving: false,
-    share: { ready: true, title: '今日吃什么？让老道士为你算一卦', path: '/pages/lunch/lunch' }
+    share: { ready: true, title: '今日吃什么？让老道士为你算一卦', path: '/pages/lunch/lunch' },
+    locErr: ''
   },
 
   onLoad: function (options) {
@@ -76,9 +77,9 @@ Page({
                 if (m.confirm) {
                   wx.openSetting({
                     success: function () { that._doGetLocation() },
-                    fail: function () { that.setData({ screen: 'denied' }) }
+                    fail: function () { that.setData({ screen: 'denied', locErr: 'openSetting 调用失败' }) }
                   })
-                } else { that.setData({ screen: 'denied' }) }
+                } else { that.setData({ screen: 'denied', locErr: '已取消位置授权' }) }
               }
             })
           } else { that._doGetLocation() }
@@ -99,13 +100,14 @@ Page({
         that.doFortune()
       },
       fail: function (err) {
-        var msg = (err && err.errMsg) || ''
+        var msg = (err && err.errMsg) || '未知定位错误'
         // auth/deny/privacy 类错误 → 方位之术被拒；其余（系统定位关闭等）提示后进入 denied
+        // 同时把真实 errMsg 落到 locErr，便于真机一次测试即暴露根因
         if (/auth|deny|permission|privacy/i.test(msg)) {
-          that.setData({ screen: 'denied' })
+          that.setData({ screen: 'denied', locErr: msg })
         } else {
           wx.showToast({ title: '定位失败，请确认已开启系统定位', icon: 'none' })
-          that.setData({ screen: 'denied' })
+          that.setData({ screen: 'denied', locErr: msg })
         }
       }
     })
@@ -145,7 +147,7 @@ Page({
   },
 
   goWelcome: function () {
-    this.setData({ screen: 'welcome', gua: null, rest: null, huangli: null })
+    this.setData({ screen: 'welcome', gua: null, rest: null, huangli: null, locErr: '' })
   },
 
   saveResult: function () {

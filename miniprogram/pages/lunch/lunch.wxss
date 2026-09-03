@@ -399,6 +399,21 @@
   max-width: 640rpx;
   font-family: "STKaiti", "KaiTi", "楷体", serif;
 }
+.loc-err {
+  font-size: 22rpx;
+  color: #a02828;
+  line-height: 1.7;
+  letter-spacing: 1rpx;
+  margin: -20rpx 0 40rpx;
+  padding: 14rpx 20rpx;
+  max-width: 640rpx;
+  text-align: center;
+  background: rgba(160, 40, 40, 0.06);
+  border: 1rpx dashed rgba(160, 40, 40, 0.25);
+  border-radius: 4rpx;
+  word-break: break-all;
+}
+.container.is-dark .loc-err { color: #e08a8a; background: rgba(160, 40, 40, 0.1); }
 
 /* ===== 暗色适配 ===== */
 .container.is-dark .welcome-title,

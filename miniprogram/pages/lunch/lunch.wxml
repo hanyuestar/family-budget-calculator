@@ -89,6 +89,7 @@
   <view class="screen" wx:if="{{screen === 'denied'}}">
     <view class="denied-icon">☯</view>
     <view class="denied-text">施主拒绝了方位之术，贫道感应不到你的所在，这卦……算不得啊。</view>
+    <view class="loc-err" wx:if="{{locErr}}">定位失败原因：{{locErr}}</view>
     <button class="btn-fortune" bindtap="goWelcome">回 去 吧</button>
   </view>
 
